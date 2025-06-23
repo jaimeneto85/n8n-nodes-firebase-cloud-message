@@ -1,0 +1,38 @@
+# Task ID: 4
+# Title: Implement Token-based Message Sending
+# Status: pending
+# Dependencies: 3
+# Priority: high
+# Description: Add functionality to send messages to specific FCM tokens.
+# Details:
+1. Update the node properties to include fields for token, title, and body
+2. Implement the logic to send a message to a single token using the Firebase Admin SDK
+3. Handle response and error cases
+
+Example implementation:
+```typescript
+import { messaging } from 'firebase-admin';
+
+// ... (inside execute method)
+const token = this.getNodeParameter('token', 0) as string;
+const title = this.getNodeParameter('title', 0) as string;
+const body = this.getNodeParameter('body', 0) as string;
+
+const message: messaging.Message = {
+  token,
+  notification: { title, body },
+};
+
+try {
+  const response = await messaging().send(message);
+  returnData.push({ json: { success: true, messageId: response } });
+} catch (error) {
+  throw new Error(`Failed to send message: ${error.message}`);
+}
+```
+
+# Test Strategy:
+1. Create unit tests for token-based message sending
+2. Test sending messages to valid and invalid tokens
+3. Verify error handling for various failure scenarios
+4. Perform integration testing by sending actual messages to test devices

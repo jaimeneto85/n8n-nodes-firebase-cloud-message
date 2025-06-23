@@ -1,0 +1,837 @@
+{
+  "tasks": [
+    {
+      "id": 1,
+      "title": "Project Setup and Configuration",
+      "description": "Initialize the project repository with TypeScript configuration, dependencies, and basic folder structure for n8n custom node development.",
+      "details": "1. Create a new npm package with `npm init`\n2. Install required dependencies:\n   - n8n-core\n   - n8n-workflow\n   - firebase-admin\n   - typescript\n3. Configure TypeScript (tsconfig.json):\n   ```json\n   {\n     \"compilerOptions\": {\n       \"target\": \"es2019\",\n       \"module\": \"commonjs\",\n       \"moduleResolution\": \"node\",\n       \"outDir\": \"./dist\",\n       \"strict\": true,\n       \"esModuleInterop\": true,\n       \"skipLibCheck\": true,\n       \"forceConsistentCasingInFileNames\": true\n     },\n     \"include\": [\"src/**/*\"]\n   }\n   ```\n4. Set up folder structure:\n   - src/\n     - nodes/\n     - credentials/\n   - package.json configuration for n8n custom node\n5. Configure package.json with n8n node information:\n   ```json\n   \"n8n\": {\n     \"nodes\": [\n       \"dist/nodes/FirebaseCloudMessage/FirebaseCloudMessage.node.js\"\n     ],\n     \"credentials\": [\n       \"dist/credentials/FirebaseCloudMessageApi.credentials.js\"\n     ]\n   }\n   ```",
+      "testStrategy": "Verify project structure is correctly set up by running `npm install` and checking for any errors. Ensure TypeScript compilation works with `tsc --noEmit` to validate configuration.",
+      "priority": "high",
+      "dependencies": [],
+      "status": "pending",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Initialize npm Package",
+          "description": "Set up a new npm project by running 'npm init' and providing the necessary metadata for the package.",
+          "dependencies": [],
+          "details": "This step creates the package.json file, which is essential for managing dependencies and scripts.",
+          "status": "pending",
+          "testStrategy": ""
+        },
+        {
+          "id": 2,
+          "title": "Install Required Dependencies",
+          "description": "Install all necessary dependencies and devDependencies, including TypeScript, n8n node development packages, and any other required libraries.",
+          "dependencies": [
+            1
+          ],
+          "details": "Use 'npm install' and 'npm install --save-dev' to add packages such as typescript, @types/node, and n8n-node-dev.",
+          "status": "pending",
+          "testStrategy": ""
+        },
+        {
+          "id": 3,
+          "title": "Configure TypeScript",
+          "description": "Set up TypeScript configuration by creating and editing the tsconfig.json file to match n8n custom node requirements.",
+          "dependencies": [
+            2
+          ],
+          "details": "Ensure the configuration supports ES module output, includes the correct source and output directories, and aligns with n8n's guidelines.",
+          "status": "pending",
+          "testStrategy": ""
+        },
+        {
+          "id": 4,
+          "title": "Set Up Folder Structure",
+          "description": "Organize the project directory with appropriate folders for source code, tests, and build outputs.",
+          "dependencies": [
+            3
+          ],
+          "details": "Create folders such as 'src' for TypeScript source files, 'dist' for compiled output, and any additional directories needed for assets or documentation.",
+          "status": "pending",
+          "testStrategy": ""
+        },
+        {
+          "id": 5,
+          "title": "Configure package.json for n8n Custom Node Compatibility",
+          "description": "Edit package.json to include fields and scripts required for n8n custom node compatibility, such as main entry points, build scripts, and n8n-specific metadata.",
+          "dependencies": [
+            4
+          ],
+          "details": "Add or update fields like 'main', 'types', 'scripts' (e.g., build, lint), and any n8n-specific configuration to ensure the node can be recognized and used by n8n.",
+          "status": "pending",
+          "testStrategy": ""
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Implement OAuth2 Authentication Module",
+      "description": "Create the credentials module for Firebase authentication using OAuth 2.0 with Service Account JSON key.",
+      "details": "1. Create credentials file at `src/credentials/FirebaseCloudMessageApi.credentials.ts`\n2. Implement OAuth2 authentication with Service Account JSON:\n   ```typescript\n   import { ICredentialType, INodeProperties } from 'n8n-workflow';\n\n   export class FirebaseCloudMessageApi implements ICredentialType {\n     name = 'firebaseCloudMessageApi';\n     displayName = 'Firebase Cloud Message API';\n     documentationUrl = 'https://firebase.google.com/docs/cloud-messaging/server';\n     properties: INodeProperties[] = [\n       {\n         displayName: 'Service Account JSON',\n         name: 'serviceAccountJson',\n         type: 'string',\n         typeOptions: {\n           rows: 10,\n         },\n         default: '',\n         required: true,\n         description: 'Service account key JSON for Firebase project',\n       },\n     ];\n   }\n   ```\n3. Add helper functions to parse and validate the Service Account JSON\n4. Implement token generation and refresh logic using the firebase-admin SDK",
+      "testStrategy": "Create a test script that validates a sample Service Account JSON and verifies it can successfully authenticate with Firebase. Test both valid and invalid credentials to ensure proper error handling.",
+      "priority": "high",
+      "dependencies": [
+        1
+      ],
+      "status": "pending",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Create the Credentials File",
+          "description": "Design and implement the credentials file according to n8n standards, defining the necessary properties for OAuth2 and service account JSON authentication.",
+          "dependencies": [],
+          "details": "Follow the n8n credentials file structure, including import statements, class definition, and property declarations for all required authentication fields. Ensure the file is named appropriately (e.g., <node-name>.credentials.ts) and placed in the correct directory.",
+          "status": "pending",
+          "testStrategy": ""
+        },
+        {
+          "id": 2,
+          "title": "Implement OAuth2 Authentication Logic",
+          "description": "Develop the logic to handle OAuth2 authentication flows, including obtaining and managing access tokens using the credentials defined in the credentials file.",
+          "dependencies": [
+            1
+          ],
+          "details": "Integrate OAuth2 logic that interacts with the authentication endpoints, processes authorization codes, and securely stores tokens as per n8n's credential management.",
+          "status": "pending",
+          "testStrategy": ""
+        },
+        {
+          "id": 3,
+          "title": "Add Helper Functions for Parsing and Validation",
+          "description": "Create utility functions to parse the service account JSON and validate all credential fields for correctness and completeness.",
+          "dependencies": [
+            1
+          ],
+          "details": "Implement robust parsing and validation logic to ensure that the credentials provided by the user are valid and usable for authentication, handling errors gracefully.",
+          "status": "pending",
+          "testStrategy": ""
+        },
+        {
+          "id": 4,
+          "title": "Implement Token Generation and Refresh Logic",
+          "description": "Develop mechanisms to generate new tokens and refresh expired tokens as needed, ensuring seamless authentication for ongoing API requests.",
+          "dependencies": [
+            2,
+            3
+          ],
+          "details": "Utilize the parsed and validated credentials to request new tokens and refresh them automatically when expired, integrating with n8n's secure storage and retrieval systems.",
+          "status": "pending",
+          "testStrategy": ""
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Create Basic Node Structure",
+      "description": "Implement the base structure for the Firebase Cloud Message node with essential properties and interfaces.",
+      "details": "1. Create node file at `src/nodes/FirebaseCloudMessage/FirebaseCloudMessage.node.ts`\n2. Define node metadata and basic structure:\n   ```typescript\n   import { IExecuteFunctions } from 'n8n-core';\n   import { INodeExecutionData, INodeType, INodeTypeDescription } from 'n8n-workflow';\n   import * as admin from 'firebase-admin';\n\n   export class FirebaseCloudMessage implements INodeType {\n     description: INodeTypeDescription = {\n       displayName: 'Firebase Cloud Message',\n       name: 'firebaseCloudMessage',\n       icon: 'file:firebase.svg',\n       group: ['output'],\n       version: 1,\n       subtitle: '={{$parameter[\"operation\"]}}',\n       description: 'Send push notifications via Firebase Cloud Messaging',\n       defaults: {\n         name: 'Firebase Cloud Message',\n       },\n       inputs: ['main'],\n       outputs: ['main'],\n       credentials: [\n         {\n           name: 'firebaseCloudMessageApi',\n           required: true,\n         },\n       ],\n       properties: [\n         // Basic properties will be added here\n       ],\n     };\n\n     async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {\n       // Implementation will be added in later tasks\n       return [[]]; \n     }\n   }\n   ```\n3. Create Firebase icon SVG file\n4. Add basic operation selection property",
+      "testStrategy": "Verify the node appears correctly in the n8n interface when installed as a custom node. Check that the node metadata is displayed properly and the credentials field is linked correctly.",
+      "priority": "high",
+      "dependencies": [
+        1
+      ],
+      "status": "pending",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Create the Node File",
+          "description": "Set up the initial TypeScript file for the custom n8n node, ensuring the file and class names match n8n conventions.",
+          "dependencies": [],
+          "details": "Use the n8n starter template or create a new file named according to the node's class (e.g., MyNode.node.ts). Include necessary imports and export the main class implementing INodeType.",
+          "status": "pending",
+          "testStrategy": ""
+        },
+        {
+          "id": 2,
+          "title": "Define Node Metadata",
+          "description": "Specify the node's metadata in the description object, including displayName, name, group, version, and description.",
+          "dependencies": [
+            1
+          ],
+          "details": "Populate the description property with required metadata fields so the node appears correctly in the n8n Editor UI. Follow n8n documentation for required and optional fields.",
+          "status": "pending",
+          "testStrategy": ""
+        },
+        {
+          "id": 3,
+          "title": "Create and Assign the Node Icon",
+          "description": "Design or select an appropriate icon for the node and reference it in the node's metadata.",
+          "dependencies": [
+            2
+          ],
+          "details": "Add the icon file (SVG or PNG) to the appropriate directory and set the icon property in the node's description object to point to this file.",
+          "status": "pending",
+          "testStrategy": ""
+        },
+        {
+          "id": 4,
+          "title": "Add Operation Selection Property",
+          "description": "Implement the operation selection property in the node's properties array to allow users to choose different operations in the UI.",
+          "dependencies": [
+            2
+          ],
+          "details": "Define a property of type 'options' in the properties array, listing available operations with their display names and values, following n8n's conventions for operation selection.",
+          "status": "pending",
+          "testStrategy": ""
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Implement Firebase Initialization Logic",
+      "description": "Create the logic to initialize Firebase Admin SDK using the provided credentials.",
+      "details": "1. Create a helper function to initialize Firebase Admin SDK:\n   ```typescript\n   async function initializeFirebase(credentials: ICredentialDataDecryptedObject): Promise<admin.app.App> {\n     try {\n       const serviceAccountJson = JSON.parse(credentials.serviceAccountJson as string);\n       \n       // Check if app is already initialized\n       try {\n         const existingApp = admin.app(serviceAccountJson.project_id);\n         return existingApp;\n       } catch (error) {\n         // App doesn't exist, create new one\n         const app = admin.initializeApp({\n           credential: admin.credential.cert(serviceAccountJson),\n         }, serviceAccountJson.project_id);\n         \n         return app;\n       }\n     } catch (error) {\n       throw new Error(`Failed to initialize Firebase: ${error.message}`);\n     }\n   }\n   ```\n2. Integrate this function into the execute method:\n   ```typescript\n   async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {\n     const credentials = await this.getCredentials('firebaseCloudMessageApi');\n     const firebaseApp = await initializeFirebase(credentials);\n     \n     // Further implementation will be added in later tasks\n     return [[]];\n   }\n   ```\n3. Add proper error handling for initialization failures",
+      "testStrategy": "Create a test that attempts to initialize Firebase with both valid and invalid credentials. Verify that the initialization succeeds with valid credentials and fails with appropriate error messages for invalid ones.",
+      "priority": "high",
+      "dependencies": [
+        2,
+        3
+      ],
+      "status": "pending",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Create Initialization Helper for Firebase Admin SDK",
+          "description": "Develop a helper function or module that initializes the Firebase Admin SDK using dynamic credentials, ensuring it handles singleton app instances and supports various environments.",
+          "dependencies": [],
+          "details": "The helper should accept dynamic credentials (e.g., service account JSON or environment variables) and initialize the SDK only if it hasn't been initialized already. It should be compatible with the Firebase Admin SDK's requirements for different environments and support best practices for credential management.",
+          "status": "pending",
+          "testStrategy": ""
+        },
+        {
+          "id": 2,
+          "title": "Integrate Initialization Helper into Execute Method",
+          "description": "Modify the execute method to utilize the initialization helper, ensuring Firebase is properly initialized before any SDK operations are performed.",
+          "dependencies": [
+            1
+          ],
+          "details": "Update the execute method to call the initialization helper at the start of its workflow. Ensure that all Firebase-dependent logic is executed only after successful initialization.",
+          "status": "pending",
+          "testStrategy": ""
+        },
+        {
+          "id": 3,
+          "title": "Add Error Handling for Initialization Failures",
+          "description": "Implement robust error handling in both the initialization helper and the execute method to gracefully manage and report initialization failures.",
+          "dependencies": [
+            1,
+            2
+          ],
+          "details": "Ensure that any errors during initialization (such as invalid credentials, duplicate initialization, or environment misconfiguration) are caught and handled appropriately. Provide clear error messages and prevent further execution if initialization fails.",
+          "status": "pending",
+          "testStrategy": ""
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Implement Token-based Message Sending",
+      "description": "Develop the functionality to send FCM notifications to specific device tokens.",
+      "details": "1. Add properties for token-based messaging:\n   ```typescript\n   {\n     displayName: 'Operation',\n     name: 'operation',\n     type: 'options',\n     options: [\n       {\n         name: 'Send to Token',\n         value: 'sendToToken',\n         description: 'Send message to specific device token(s)',\n       },\n       // Other operations will be added later\n     ],\n     default: 'sendToToken',\n     required: true,\n   },\n   {\n     displayName: 'Device Token',\n     name: 'token',\n     type: 'string',\n     displayOptions: {\n       show: {\n         operation: ['sendToToken'],\n       },\n     },\n     default: '',\n     required: true,\n     description: 'The registration token for the device',\n   },\n   {\n     displayName: 'Multiple Tokens',\n     name: 'multipleTokens',\n     type: 'boolean',\n     displayOptions: {\n       show: {\n         operation: ['sendToToken'],\n       },\n     },\n     default: false,\n     description: 'Whether to send to multiple tokens',\n   },\n   {\n     displayName: 'Device Tokens',\n     name: 'tokens',\n     type: 'string',\n     typeOptions: {\n       multipleValues: true,\n     },\n     displayOptions: {\n       show: {\n         operation: ['sendToToken'],\n         multipleTokens: [true],\n       },\n     },\n     default: [],\n     required: true,\n     description: 'The registration tokens for the devices',\n   }\n   ```\n2. Add notification content fields:\n   ```typescript\n   {\n     displayName: 'Title',\n     name: 'title',\n     type: 'string',\n     default: '',\n     required: true,\n     description: 'The notification title',\n   },\n   {\n     displayName: 'Body',\n     name: 'body',\n     type: 'string',\n     default: '',\n     required: true,\n     description: 'The notification body text',\n   }\n   ```\n3. Implement token-based sending in execute method:\n   ```typescript\n   if (operation === 'sendToToken') {\n     const multipleTokens = this.getNodeParameter('multipleTokens', 0, false) as boolean;\n     let tokens: string[];\n     \n     if (multipleTokens) {\n       tokens = this.getNodeParameter('tokens', 0, []) as string[];\n     } else {\n       const token = this.getNodeParameter('token', 0, '') as string;\n       tokens = [token];\n     }\n     \n     const title = this.getNodeParameter('title', 0, '') as string;\n     const body = this.getNodeParameter('body', 0, '') as string;\n     \n     const message = {\n       notification: {\n         title,\n         body,\n       },\n     };\n     \n     const results = [];\n     \n     for (const token of tokens) {\n       try {\n         const response = await firebaseApp.messaging().send({\n           token,\n           ...message,\n         });\n         \n         results.push({\n           success: true,\n           messageId: response,\n           token,\n         });\n       } catch (error) {\n         results.push({\n           success: false,\n           error: error.message,\n           token,\n         });\n       }\n     }\n     \n     return [this.helpers.returnJsonArray(results)];\n   }\n   ```",
+      "testStrategy": "Test sending notifications to both valid and invalid device tokens. Verify successful delivery to valid tokens and proper error handling for invalid ones. Test both single token and multiple token scenarios.",
+      "priority": "medium",
+      "dependencies": [
+        4
+      ],
+      "status": "pending",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Add Token-Based Properties to Message Model",
+          "description": "Extend the message data model to include properties for device tokens, supporting both single and multiple token scenarios.",
+          "dependencies": [],
+          "details": "Update the schema or class definitions to store one or more device tokens per message. Ensure compatibility with existing message structures.",
+          "status": "pending",
+          "testStrategy": ""
+        },
+        {
+          "id": 2,
+          "title": "Add Notification Content Fields",
+          "description": "Introduce fields for notification content such as title, body, and optional data payloads in the message model.",
+          "dependencies": [
+            1
+          ],
+          "details": "Modify the message structure to include all necessary notification fields required by the messaging service (e.g., FCM or APNs).",
+          "status": "pending",
+          "testStrategy": ""
+        },
+        {
+          "id": 3,
+          "title": "Implement Single Token Sending Logic",
+          "description": "Develop the logic to send a notification to a single device token using the constructed message and content fields.",
+          "dependencies": [
+            2
+          ],
+          "details": "Integrate with the messaging provider's API to send messages to individual tokens. Handle API authentication and response parsing.",
+          "status": "pending",
+          "testStrategy": ""
+        },
+        {
+          "id": 4,
+          "title": "Implement Multiple Token Sending Logic",
+          "description": "Develop the logic to send notifications to multiple device tokens, optimizing for batch delivery where supported.",
+          "dependencies": [
+            3
+          ],
+          "details": "Implement batching or looped sending as appropriate. Ensure efficient handling of large token lists and compliance with provider limits.",
+          "status": "pending",
+          "testStrategy": ""
+        },
+        {
+          "id": 5,
+          "title": "Handle Results and Errors",
+          "description": "Implement robust result and error handling for both single and multiple token sending scenarios.",
+          "dependencies": [
+            4
+          ],
+          "details": "Capture and log success/failure responses, handle invalid or expired tokens, and provide actionable error messages for downstream processing.",
+          "status": "pending",
+          "testStrategy": ""
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Implement Topic and Condition-based Messaging",
+      "description": "Add support for sending messages to topics and conditional groups.",
+      "details": "1. Add new operation options:\n   ```typescript\n   {\n     name: 'Send to Topic',\n     value: 'sendToTopic',\n     description: 'Send message to devices subscribed to a topic',\n   },\n   {\n     name: 'Send to Condition',\n     value: 'sendToCondition',\n     description: 'Send message to devices that match a condition',\n   }\n   ```\n2. Add properties for topic-based messaging:\n   ```typescript\n   {\n     displayName: 'Topic',\n     name: 'topic',\n     type: 'string',\n     displayOptions: {\n       show: {\n         operation: ['sendToTopic'],\n       },\n     },\n     default: '',\n     required: true,\n     description: 'The topic name to send to',\n   }\n   ```\n3. Add properties for condition-based messaging:\n   ```typescript\n   {\n     displayName: 'Condition',\n     name: 'condition',\n     type: 'string',\n     displayOptions: {\n       show: {\n         operation: ['sendToCondition'],\n       },\n     },\n     default: '',\n     required: true,\n     description: 'The condition to target (e.g., \\'topic1\\' in topics && (\\'topic2\\' in topics || \\'topic3\\' in topics))',\n   }\n   ```\n4. Implement topic-based sending:\n   ```typescript\n   if (operation === 'sendToTopic') {\n     const topic = this.getNodeParameter('topic', 0, '') as string;\n     const title = this.getNodeParameter('title', 0, '') as string;\n     const body = this.getNodeParameter('body', 0, '') as string;\n     \n     const message = {\n       notification: {\n         title,\n         body,\n       },\n       topic,\n     };\n     \n     try {\n       const response = await firebaseApp.messaging().send(message);\n       return [this.helpers.returnJsonArray([{\n         success: true,\n         messageId: response,\n         topic,\n       }])];\n     } catch (error) {\n       return [this.helpers.returnJsonArray([{\n         success: false,\n         error: error.message,\n         topic,\n       }])];\n     }\n   }\n   ```\n5. Implement condition-based sending:\n   ```typescript\n   if (operation === 'sendToCondition') {\n     const condition = this.getNodeParameter('condition', 0, '') as string;\n     const title = this.getNodeParameter('title', 0, '') as string;\n     const body = this.getNodeParameter('body', 0, '') as string;\n     \n     const message = {\n       notification: {\n         title,\n         body,\n       },\n       condition,\n     };\n     \n     try {\n       const response = await firebaseApp.messaging().send(message);\n       return [this.helpers.returnJsonArray([{\n         success: true,\n         messageId: response,\n         condition,\n       }])];\n     } catch (error) {\n       return [this.helpers.returnJsonArray([{\n         success: false,\n         error: error.message,\n         condition,\n       }])];\n     }\n   }\n   ```",
+      "testStrategy": "Test sending messages to topics with both valid and invalid topic names. Test condition-based messaging with various condition expressions. Verify that messages are delivered correctly and errors are handled appropriately.",
+      "priority": "medium",
+      "dependencies": [
+        5
+      ],
+      "status": "pending",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Add Topic Operation",
+          "description": "Design and implement the ability to create, manage, and subscribe clients to topics. Ensure thread-safe handling of topic data structures and provide interfaces for topic subscription and unsubscription.",
+          "dependencies": [],
+          "details": "Implement a TopicHub structure with methods for subscribing and unsubscribing clients to topics. Ensure proper synchronization using mutexes to handle concurrent access.",
+          "status": "pending",
+          "testStrategy": ""
+        },
+        {
+          "id": 2,
+          "title": "Add Condition Operation",
+          "description": "Design and implement the ability to define and evaluate conditions for message routing. This includes parsing condition expressions and associating them with routing rules.",
+          "dependencies": [],
+          "details": "Create a mechanism to define routing conditions (e.g., based on message content or metadata) and evaluate them at runtime to determine message destinations.",
+          "status": "pending",
+          "testStrategy": ""
+        },
+        {
+          "id": 3,
+          "title": "Implement Topic-Based Sending",
+          "description": "Develop the logic to send messages to all clients subscribed to a specific topic. Integrate this with the message processing pipeline to support topic-based routing.",
+          "dependencies": [
+            1
+          ],
+          "details": "Extend the message processing function to recognize topic-based messages and dispatch them to all clients subscribed to the relevant topic.",
+          "status": "pending",
+          "testStrategy": ""
+        },
+        {
+          "id": 4,
+          "title": "Implement Condition-Based Sending",
+          "description": "Develop the logic to evaluate routing conditions for each message and send messages to clients or endpoints that match the specified conditions.",
+          "dependencies": [
+            2
+          ],
+          "details": "Integrate condition evaluation into the message processing pipeline, ensuring that messages are routed according to defined conditions and only delivered to matching recipients.",
+          "status": "pending",
+          "testStrategy": ""
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Implement Advanced Notification Options",
+      "description": "Add support for advanced notification options like priority, sound, icon, and click actions.",
+      "details": "1. Add advanced notification options:\n   ```typescript\n   {\n     displayName: 'Advanced Options',\n     name: 'advancedOptions',\n     type: 'collection',\n     placeholder: 'Add Option',\n     default: {},\n     options: [\n       {\n         displayName: 'Priority',\n         name: 'priority',\n         type: 'options',\n         options: [\n           {\n             name: 'High',\n             value: 'high',\n           },\n           {\n             name: 'Normal',\n             value: 'normal',\n           },\n         ],\n         default: 'normal',\n         description: 'The priority of the message',\n       },\n       {\n         displayName: 'Sound',\n         name: 'sound',\n         type: 'string',\n         default: 'default',\n         description: 'The sound to play when the device receives the notification',\n       },\n       {\n         displayName: 'Icon',\n         name: 'icon',\n         type: 'string',\n         default: '',\n         description: 'The notification icon',\n       },\n       {\n         displayName: 'Click Action',\n         name: 'clickAction',\n         type: 'string',\n         default: '',\n         description: 'The action to perform when the notification is clicked',\n       },\n       {\n         displayName: 'Color',\n         name: 'color',\n         type: 'color',\n         default: '#000000',\n         description: 'The notification color',\n       },\n       {\n         displayName: 'Tag',\n         name: 'tag',\n         type: 'string',\n         default: '',\n         description: 'Identifier to replace existing notifications',\n       },\n       {\n         displayName: 'Time To Live (seconds)',\n         name: 'ttl',\n         type: 'number',\n         default: 3600,\n         description: 'How long the message should be kept if the device is offline',\n       },\n     ],\n   },\n   {\n     displayName: 'Custom Data',\n     name: 'customData',\n     placeholder: 'Add Custom Data',\n     type: 'fixedCollection',\n     typeOptions: {\n       multipleValues: true,\n     },\n     default: {},\n     options: [\n       {\n         name: 'data',\n         displayName: 'Data',\n         values: [\n           {\n             displayName: 'Key',\n             name: 'key',\n             type: 'string',\n             default: '',\n             required: true,\n           },\n           {\n             displayName: 'Value',\n             name: 'value',\n             type: 'string',\n             default: '',\n             required: true,\n           },\n         ],\n       },\n     ],\n   }\n   ```\n2. Update message building logic to include advanced options:\n   ```typescript\n   // Get advanced options\n   const advancedOptions = this.getNodeParameter('advancedOptions', 0, {}) as IDataObject;\n   \n   // Get custom data\n   const customDataItems = this.getNodeParameter('customData.data', 0, []) as IDataObject[];\n   const data: IDataObject = {};\n   \n   if (customDataItems) {\n     for (const item of customDataItems) {\n       data[item.key as string] = item.value;\n     }\n   }\n   \n   // Build the message object\n   const message: IDataObject = {\n     notification: {\n       title,\n       body,\n     },\n     data,\n   };\n   \n   // Add Android specific options\n   if (Object.keys(advancedOptions).length > 0) {\n     message.android = {\n       priority: advancedOptions.priority || 'normal',\n       notification: {\n         sound: advancedOptions.sound || undefined,\n         icon: advancedOptions.icon || undefined,\n         color: advancedOptions.color || undefined,\n         tag: advancedOptions.tag || undefined,\n         clickAction: advancedOptions.clickAction || undefined,\n       },\n       ttl: advancedOptions.ttl ? `${advancedOptions.ttl}s` : undefined,\n     };\n     \n     // Add iOS specific options\n     message.apns = {\n       payload: {\n         aps: {\n           sound: advancedOptions.sound || 'default',\n           badge: advancedOptions.badge || undefined,\n           category: advancedOptions.clickAction || undefined,\n         },\n       },\n     };\n   }\n   ```",
+      "testStrategy": "Test sending notifications with various combinations of advanced options. Verify that the options are correctly included in the FCM payload. Test on both Android and iOS devices if possible to ensure platform-specific options work correctly.",
+      "priority": "medium",
+      "dependencies": [
+        5,
+        6
+      ],
+      "status": "pending",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Design and Integrate Advanced Options into the UI",
+          "description": "Expand the user interface to include advanced options for FCM messages, ensuring flexibility for both common and platform-specific fields.",
+          "dependencies": [],
+          "details": "This includes designing UI components for advanced FCM options, such as delivery options, custom data fields, and toggles for platform-specific settings. Ensure the UI allows users to input values for all relevant FCM payload fields, including those unique to Android and iOS.",
+          "status": "pending",
+          "testStrategy": ""
+        },
+        {
+          "id": 2,
+          "title": "Update Message Construction Logic for Advanced Options",
+          "description": "Modify the backend logic to construct FCM messages based on the new advanced options provided via the UI.",
+          "dependencies": [
+            1
+          ],
+          "details": "Ensure the message construction logic can handle both common and platform-specific fields, correctly mapping UI inputs to the FCM payload structure. Support for custom data fields and advanced delivery options must be included.",
+          "status": "pending",
+          "testStrategy": ""
+        },
+        {
+          "id": 3,
+          "title": "Implement Android-Specific Option Handling",
+          "description": "Add logic to process and include Android-specific FCM options in the message payload.",
+          "dependencies": [
+            2
+          ],
+          "details": "Support AndroidConfig fields such as priority, time-to-live (TTL), and notification channel. Ensure these options are only included in the payload when targeting Android devices, following FCM documentation for platform-specific fields.",
+          "status": "pending",
+          "testStrategy": ""
+        },
+        {
+          "id": 4,
+          "title": "Implement iOS-Specific Option Handling",
+          "description": "Add logic to process and include iOS-specific FCM options in the message payload.",
+          "dependencies": [
+            2
+          ],
+          "details": "Support Apple-specific fields such as APNs headers, badge, sound, and expiration date. Ensure these options are only included in the payload when targeting iOS devices, adhering to FCM's platform-specific field requirements.",
+          "status": "pending",
+          "testStrategy": ""
+        },
+        {
+          "id": 5,
+          "title": "Support Custom Data Fields in Message Payloads",
+          "description": "Enable the addition of arbitrary custom data fields to FCM messages from the UI and ensure correct serialization in the payload.",
+          "dependencies": [
+            2
+          ],
+          "details": "Allow users to define key-value pairs for custom data, validate input, and ensure these fields are included in the 'data' section of the FCM message for all platforms as appropriate.",
+          "status": "pending",
+          "testStrategy": ""
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "title": "Implement JSON Mode for Message Configuration",
+      "description": "Add support for configuring messages using raw JSON instead of structured fields.",
+      "details": "1. Add option to switch between structured fields and JSON mode:\n   ```typescript\n   {\n     displayName: 'JSON Mode',\n     name: 'jsonMode',\n     type: 'boolean',\n     default: false,\n     description: 'Whether to use JSON to configure the message instead of fields',\n   },\n   {\n     displayName: 'Message JSON',\n     name: 'messageJson',\n     type: 'json',\n     displayOptions: {\n       show: {\n         jsonMode: [true],\n       },\n     },\n     default: '{\n  \"notification\": {\n    \"title\": \"Notification Title\",\n    \"body\": \"Notification Body\"\n  },\n  \"android\": {\n    \"priority\": \"high\",\n    \"notification\": {\n      \"sound\": \"default\"\n    }\n  }\n}',\n     required: true,\n     description: 'Message configuration in JSON format',\n   }\n   ```\n2. Update execute method to handle JSON mode:\n   ```typescript\n   const jsonMode = this.getNodeParameter('jsonMode', 0, false) as boolean;\n   let messageData: IDataObject = {};\n   \n   if (jsonMode) {\n     // Use JSON configuration\n     try {\n       const messageJson = this.getNodeParameter('messageJson', 0, '') as string;\n       messageData = JSON.parse(messageJson);\n     } catch (error) {\n       throw new Error(`Invalid JSON format: ${error.message}`);\n     }\n   } else {\n     // Use structured fields (existing implementation)\n     // ...\n   }\n   \n   // Now use messageData for sending\n   if (operation === 'sendToToken') {\n     // For token-based sending\n     if (jsonMode) {\n       const multipleTokens = this.getNodeParameter('multipleTokens', 0, false) as boolean;\n       let tokens: string[];\n       \n       if (multipleTokens) {\n         tokens = this.getNodeParameter('tokens', 0, []) as string[];\n       } else {\n         const token = this.getNodeParameter('token', 0, '') as string;\n         tokens = [token];\n       }\n       \n       const results = [];\n       \n       for (const token of tokens) {\n         try {\n           const message = {\n             token,\n             ...messageData,\n           };\n           \n           const response = await firebaseApp.messaging().send(message);\n           results.push({\n             success: true,\n             messageId: response,\n             token,\n           });\n         } catch (error) {\n           results.push({\n             success: false,\n             error: error.message,\n             token,\n           });\n         }\n       }\n       \n       return [this.helpers.returnJsonArray(results)];\n     }\n     // ... similar updates for topic and condition modes\n   }\n   ```",
+      "testStrategy": "Test sending messages using both structured fields and JSON mode. Verify that the JSON configuration works correctly for all sending modes (token, topic, condition). Test with both valid and invalid JSON to ensure proper error handling.",
+      "priority": "medium",
+      "dependencies": [
+        5,
+        6,
+        7
+      ],
+      "status": "pending",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Add JSON Mode Toggle",
+          "description": "Implement a UI toggle that allows users to switch between standard and JSON mode for input and output.",
+          "dependencies": [],
+          "details": "This toggle should be clearly visible and update the application's state to reflect the selected mode.",
+          "status": "pending",
+          "testStrategy": ""
+        },
+        {
+          "id": 2,
+          "title": "Implement JSON Input Field",
+          "description": "Create an input field that accepts raw JSON when JSON mode is enabled.",
+          "dependencies": [
+            1
+          ],
+          "details": "The input field should validate basic JSON syntax on input and provide user feedback for invalid JSON.",
+          "status": "pending",
+          "testStrategy": ""
+        },
+        {
+          "id": 3,
+          "title": "Update Execute Method to Handle JSON Mode",
+          "description": "Modify the execute method to process input differently based on whether JSON mode is active.",
+          "dependencies": [
+            1,
+            2
+          ],
+          "details": "When JSON mode is enabled, the method should parse and handle the JSON input; otherwise, it should use the standard configuration logic.",
+          "status": "pending",
+          "testStrategy": ""
+        },
+        {
+          "id": 4,
+          "title": "Add Error Handling for Invalid JSON",
+          "description": "Implement robust error handling to catch and display errors when invalid JSON is submitted in JSON mode.",
+          "dependencies": [
+            2,
+            3
+          ],
+          "details": "Ensure that users receive clear error messages and that the application does not crash on malformed JSON input.",
+          "status": "pending",
+          "testStrategy": ""
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "title": "Implement Error Handling and Validation",
+      "description": "Add comprehensive error handling and input validation to ensure reliable operation.",
+      "details": "1. Add input validation functions:\n   ```typescript\n   function validateToken(token: string): boolean {\n     // FCM tokens are typically ~150+ characters\n     return token.length > 100 && token.includes(':');\n   }\n   \n   function validateTopic(topic: string): boolean {\n     // Topics must match /topics/[a-zA-Z0-9-_.~%]+\n     return /^[a-zA-Z0-9-_.~%]+$/.test(topic);\n   }\n   \n   function validateCondition(condition: string): boolean {\n     // Basic validation - should contain 'in topics'\n     return condition.includes('in topics');\n   }\n   ```\n2. Implement validation in the execute method:\n   ```typescript\n   if (operation === 'sendToToken') {\n     const multipleTokens = this.getNodeParameter('multipleTokens', 0, false) as boolean;\n     let tokens: string[];\n     \n     if (multipleTokens) {\n       tokens = this.getNodeParameter('tokens', 0, []) as string[];\n       if (tokens.length === 0) {\n         throw new Error('At least one token must be provided');\n       }\n       \n       // Validate each token\n       const invalidTokens = tokens.filter(token => !validateToken(token));\n       if (invalidTokens.length > 0) {\n         throw new Error(`Invalid token format detected: ${invalidTokens.join(', ')}`);\n       }\n     } else {\n       const token = this.getNodeParameter('token', 0, '') as string;\n       if (!validateToken(token)) {\n         throw new Error('Invalid token format');\n       }\n       tokens = [token];\n     }\n     \n     // ... rest of implementation\n   }\n   \n   // Similar validation for topic and condition\n   ```\n3. Add comprehensive error handling:\n   ```typescript\n   try {\n     // Initialize Firebase\n     const credentials = await this.getCredentials('firebaseCloudMessageApi');\n     let firebaseApp: admin.app.App;\n     \n     try {\n       firebaseApp = await initializeFirebase(credentials);\n     } catch (error) {\n       throw new Error(`Firebase initialization failed: ${error.message}`);\n     }\n     \n     // Get operation\n     const operation = this.getNodeParameter('operation', 0) as string;\n     \n     // Process based on operation with try/catch blocks\n     try {\n       if (operation === 'sendToToken') {\n         // ... implementation with validation\n       } else if (operation === 'sendToTopic') {\n         // ... implementation with validation\n       } else if (operation === 'sendToCondition') {\n         // ... implementation with validation\n       } else {\n         throw new Error(`Unsupported operation: ${operation}`);\n       }\n     } catch (error) {\n       if (error.code === 'messaging/registration-token-not-registered') {\n         throw new Error('The provided registration token is not registered. It could be that the token is invalid or expired.');\n       } else if (error.code === 'messaging/invalid-argument') {\n         throw new Error(`Invalid argument provided: ${error.message}`);\n       } else {\n         throw error;\n       }\n     }\n   } catch (error) {\n     if (this.continueOnFail()) {\n       return [this.helpers.returnJsonArray([{ error: error.message }])];\n     } else {\n       throw error;\n     }\n   }\n   ```",
+      "testStrategy": "Test with various invalid inputs (malformed tokens, invalid topics, incorrect JSON) to verify that appropriate validation errors are raised. Test error handling by simulating various Firebase API errors and verifying that they are properly caught and reported.",
+      "priority": "medium",
+      "dependencies": [
+        5,
+        6,
+        7,
+        8
+      ],
+      "status": "pending",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Design and Implement Input Validation Functions",
+          "description": "Develop robust input validation functions to check data types, required fields, and value constraints for all expected inputs.",
+          "dependencies": [],
+          "details": "Ensure validation covers all input scenarios, including edge cases. Use clear error messages for invalid inputs. Consider both client-side and server-side validation requirements.",
+          "status": "pending",
+          "testStrategy": ""
+        },
+        {
+          "id": 2,
+          "title": "Integrate Validation into the Execute Method",
+          "description": "Embed the input validation logic into the main execute method to ensure all inputs are checked before processing.",
+          "dependencies": [
+            1
+          ],
+          "details": "Modify the execute method to call validation functions at the start and halt execution if validation fails, returning appropriate error responses.",
+          "status": "pending",
+          "testStrategy": ""
+        },
+        {
+          "id": 3,
+          "title": "Add Comprehensive Error Handling",
+          "description": "Implement error handling throughout the execute method to catch and manage all runtime exceptions and validation errors.",
+          "dependencies": [
+            2
+          ],
+          "details": "Ensure all errors are caught, logged, and returned in a consistent format. Include detailed error messages and codes for easier debugging and user feedback.",
+          "status": "pending",
+          "testStrategy": ""
+        },
+        {
+          "id": 4,
+          "title": "Handle Firebase-Specific Errors",
+          "description": "Extend error handling to specifically detect and manage Firebase-related errors, such as permission denials, validation failures, and connectivity issues.",
+          "dependencies": [
+            3
+          ],
+          "details": "Map Firebase error codes to user-friendly messages and ensure these are surfaced appropriately in the application's error responses.",
+          "status": "pending",
+          "testStrategy": ""
+        },
+        {
+          "id": 5,
+          "title": "Support Continue-on-Fail Logic",
+          "description": "Implement logic to allow the process to continue with subsequent operations even if some validations or operations fail, based on configuration.",
+          "dependencies": [
+            4
+          ],
+          "details": "Add a configuration option to enable 'continue-on-fail' behavior. Ensure partial successes and failures are tracked and reported accurately.",
+          "status": "pending",
+          "testStrategy": ""
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "title": "Documentation and Package Publishing",
+      "description": "Create comprehensive documentation and prepare the package for publication to npm.",
+      "details": "1. Create README.md with installation and usage instructions:\n   ```markdown\n   # n8n-nodes-firebase-cloud-message\n   \n   This is a custom node for [n8n](https://n8n.io/) that allows you to send push notifications through Firebase Cloud Messaging (FCM).\n   \n   ## Installation\n   \n   ### Community Nodes (Recommended)\n   \n   1. Go to **Settings > Community Nodes**\n   2. Select **Install**\n   3. Enter `n8n-nodes-firebase-cloud-message` in **Enter npm package name**\n   4. Click **Install**\n   \n   ### Manual Installation\n   \n   ```bash\n   npm install n8n-nodes-firebase-cloud-message\n   ```\n   \n   ## Usage\n   \n   1. Create a Firebase project and enable Cloud Messaging\n   2. Generate a Service Account key (JSON) from the Firebase Console\n   3. Add the Firebase Cloud Message node to your workflow\n   4. Configure authentication using your Service Account JSON\n   5. Choose the sending mode (token, topic, or condition)\n   6. Configure your notification\n   \n   ## Features\n   \n   - Send notifications to specific device tokens\n   - Send notifications to topics\n   - Send notifications using conditions\n   - Configure notifications using structured fields or raw JSON\n   - Advanced options for customizing notifications\n   \n   ## Examples\n   \n   ### Sending to a Device Token\n   \n   [Screenshot/GIF of example workflow]\n   \n   ### Sending to a Topic\n   \n   [Screenshot/GIF of example workflow]\n   ```\n2. Create example workflows as JSON files in an `examples` directory\n3. Update package.json with metadata for npm:\n   ```json\n   {\n     \"name\": \"n8n-nodes-firebase-cloud-message\",\n     \"version\": \"0.1.0\",\n     \"description\": \"n8n node to send push notifications via Firebase Cloud Messaging\",\n     \"keywords\": [\n       \"n8n\",\n       \"n8n-node\",\n       \"n8n-community-node\",\n       \"firebase\",\n       \"fcm\",\n       \"push-notifications\"\n     ],\n     \"license\": \"MIT\",\n     \"homepage\": \"https://github.com/yourusername/n8n-nodes-firebase-cloud-message\",\n     \"author\": {\n       \"name\": \"Your Name\",\n       \"email\": \"your.email@example.com\"\n     },\n     \"repository\": {\n       \"type\": \"git\",\n       \"url\": \"git+https://github.com/yourusername/n8n-nodes-firebase-cloud-message.git\"\n     },\n     \"main\": \"index.js\",\n     \"scripts\": {\n       \"build\": \"tsc && gulp build:icons\",\n       \"dev\": \"tsc --watch\",\n       \"format\": \"prettier --write \\\"src/**/*.ts\\\"\",\n       \"lint\": \"eslint src/**/*.ts\",\n       \"prepublishOnly\": \"npm run build\"\n     },\n     \"files\": [\n       \"dist\"\n     ],\n     \"n8n\": {\n       \"n8nNodesApiVersion\": 1,\n       \"credentials\": [\n         \"dist/credentials/FirebaseCloudMessageApi.credentials.js\"\n       ],\n       \"nodes\": [\n         \"dist/nodes/FirebaseCloudMessage/FirebaseCloudMessage.node.js\"\n       ]\n     },\n     \"devDependencies\": {\n       \"@types/node\": \"^16.11.10\",\n       \"eslint\": \"^8.4.1\",\n       \"gulp\": \"^4.0.2\",\n       \"n8n-workflow\": \"^0.107.0\",\n       \"prettier\": \"^2.5.1\",\n       \"typescript\": \"~4.5.4\"\n     },\n     \"dependencies\": {\n       \"firebase-admin\": \"^10.0.0\"\n     }\n   }\n   ```\n4. Create a CHANGELOG.md file\n5. Add license file (MIT or other appropriate license)\n6. Create a .npmignore file to exclude development files\n7. Prepare build scripts and configuration for publishing",
+      "testStrategy": "Verify documentation accuracy by following the installation and usage instructions on a fresh n8n instance. Test the npm package by publishing to a test registry or using npm pack and installing the resulting tarball.",
+      "priority": "low",
+      "dependencies": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "status": "pending",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Draft the README File",
+          "description": "Write a comprehensive README.md that includes the project title, description, usage instructions, installation steps, and any other relevant sections to help users understand and use the project effectively.",
+          "dependencies": [],
+          "details": "Follow best practices for README structure, ensuring clarity and completeness. Include sections such as motivation, features, and contribution guidelines as appropriate.",
+          "status": "pending",
+          "testStrategy": ""
+        },
+        {
+          "id": 2,
+          "title": "Create Example Workflows",
+          "description": "Develop example workflows or usage scenarios that demonstrate how to use the project in practical situations.",
+          "dependencies": [
+            1
+          ],
+          "details": "Ensure the examples are clear, well-documented, and referenced in the README to help users get started quickly.",
+          "status": "pending",
+          "testStrategy": ""
+        },
+        {
+          "id": 3,
+          "title": "Update package.json Metadata",
+          "description": "Review and update the package.json file to ensure all metadata fields (name, version, description, author, license, repository, etc.) are accurate and complete.",
+          "dependencies": [
+            1
+          ],
+          "details": "Verify that the metadata aligns with the information provided in the README and other documentation.",
+          "status": "pending",
+          "testStrategy": ""
+        },
+        {
+          "id": 4,
+          "title": "Create a Changelog",
+          "description": "Establish a CHANGELOG.md file to document notable changes, enhancements, and bug fixes for each release.",
+          "dependencies": [
+            3
+          ],
+          "details": "Follow a consistent format (such as Keep a Changelog) and ensure the changelog is updated for the current release.",
+          "status": "pending",
+          "testStrategy": ""
+        },
+        {
+          "id": 5,
+          "title": "Add a License File",
+          "description": "Include a LICENSE file in the project root to clearly specify the terms under which the project is distributed.",
+          "dependencies": [
+            3
+          ],
+          "details": "Choose an appropriate open-source license and ensure the license type matches the one specified in package.json.",
+          "status": "pending",
+          "testStrategy": ""
+        },
+        {
+          "id": 6,
+          "title": "Prepare Build and Publish Scripts",
+          "description": "Set up and verify scripts for building and publishing the package, ensuring they are documented and functional.",
+          "dependencies": [
+            3
+          ],
+          "details": "Scripts should automate tasks such as building the project, running tests, and publishing to the relevant package registry.",
+          "status": "pending",
+          "testStrategy": ""
+        }
+      ]
+    }
+  ],
+  "master": {
+    "tasks": [
+      {
+        "id": 1,
+        "title": "Setup Project Repository and Environment",
+        "description": "Initialize the project repository, set up the development environment, and configure essential dependencies.",
+        "details": "1. Create a new repository on GitHub named 'n8n-nodes-firebase-cloud-message'\n2. Initialize the project with npm: `npm init -y`\n3. Install necessary dependencies:\n   - n8n-core@^0.160.0\n   - n8n-workflow@^0.160.0\n   - firebase-admin@^11.9.0\n4. Set up TypeScript:\n   - Install TypeScript: `npm install --save-dev typescript@^4.9.5`\n   - Create tsconfig.json with appropriate settings\n5. Set up linting and formatting:\n   - Install ESLint and Prettier: `npm install --save-dev eslint@^8.40.0 prettier@^2.8.8`\n   - Configure .eslintrc.js and .prettierrc\n6. Create basic folder structure:\n   /src\n     /nodes\n     /credentials\n   /dist\n7. Update package.json with appropriate scripts (build, lint, test)",
+        "testStrategy": "Manually verify the project structure and run `npm install` to ensure all dependencies are correctly installed. Check if TypeScript compilation works by running `npm run build`.",
+        "priority": "high",
+        "dependencies": [],
+        "status": "in-progress",
+        "subtasks": []
+      },
+      {
+        "id": 2,
+        "title": "Implement Firebase Authentication Module",
+        "description": "Create a module to handle OAuth 2.0 authentication with Firebase using Service Account JSON key.",
+        "details": "1. Create a new file `src/credentials/FirebaseOAuth2Api.credentials.ts`\n2. Implement the ICredentialType interface for Firebase OAuth2\n3. Use the `google-auth-library` package for handling OAuth2 authentication\n4. Implement methods for:\n   - Initializing authentication with service account JSON\n   - Generating and refreshing access tokens\n   - Validating credentials\n5. Example implementation:\n```typescript\nimport { ICredentialType, INodeProperties } from 'n8n-workflow';\nimport { GoogleAuth } from 'google-auth-library';\n\nexport class FirebaseOAuth2Api implements ICredentialType {\n  name = 'firebaseOAuth2Api';\n  displayName = 'Firebase OAuth2 API';\n  documentationUrl = 'https://firebase.google.com/docs/admin/setup';\n  properties: INodeProperties[] = [\n    {\n      displayName: 'Service Account JSON',\n      name: 'serviceAccountJson',\n      type: 'string',\n      typeOptions: { password: true },\n      default: '',\n      required: true,\n      description: 'Enter the Service Account JSON key',\n    },\n  ];\n\n  async authenticate(credentials: ICredentialDataDecryptedObject): Promise<any> {\n    const serviceAccountJson = JSON.parse(credentials.serviceAccountJson as string);\n    const auth = new GoogleAuth({\n      credentials: serviceAccountJson,\n      scopes: ['https://www.googleapis.com/auth/firebase.messaging'],\n    });\n    return auth.getClient();\n  }\n}\n```",
+        "testStrategy": "1. Create unit tests for the FirebaseOAuth2Api class\n2. Test successful authentication with valid service account JSON\n3. Test error handling with invalid service account JSON\n4. Verify token generation and refresh functionality",
+        "priority": "high",
+        "dependencies": [
+          1
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 3,
+        "title": "Create Base Node Structure",
+        "description": "Set up the basic structure for the Firebase Cloud Messaging node in n8n.",
+        "details": "1. Create a new file `src/nodes/FirebaseCloudMessaging.node.ts`\n2. Implement the basic node structure adhering to n8n's node creation guidelines\n3. Define node properties for authentication and basic message fields\n4. Implement a skeleton execute method\n\nExample implementation:\n```typescript\nimport { IExecuteFunctions } from 'n8n-core';\nimport { INodeExecutionData, INodeType, INodeTypeDescription } from 'n8n-workflow';\nimport { FirebaseOAuth2Api } from '../credentials/FirebaseOAuth2Api.credentials';\n\nexport class FirebaseCloudMessaging implements INodeType {\n  description: INodeTypeDescription = {\n    displayName: 'Firebase Cloud Messaging',\n    name: 'firebaseCloudMessaging',\n    icon: 'file:firebase.svg',\n    group: ['output'],\n    version: 1,\n    description: 'Send push notifications via Firebase Cloud Messaging',\n    defaults: { name: 'Firebase Cloud Messaging' },\n    inputs: ['main'],\n    outputs: ['main'],\n    credentials: [{ name: 'firebaseOAuth2Api', required: true }],\n    properties: [\n      // Define properties here\n    ],\n  };\n\n  async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {\n    const items = this.getInputData();\n    const returnData: INodeExecutionData[] = [];\n    \n    // Implement execute logic here\n\n    return [returnData];\n  }\n}\n```",
+        "testStrategy": "1. Create a basic workflow in n8n with the Firebase Cloud Messaging node\n2. Verify that the node appears correctly in the n8n interface\n3. Test basic execution to ensure no errors occur\n4. Verify that the node properties are displayed correctly",
+        "priority": "high",
+        "dependencies": [
+          1,
+          2
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 4,
+        "title": "Implement Token-based Message Sending",
+        "description": "Add functionality to send messages to specific FCM tokens.",
+        "details": "1. Update the node properties to include fields for token, title, and body\n2. Implement the logic to send a message to a single token using the Firebase Admin SDK\n3. Handle response and error cases\n\nExample implementation:\n```typescript\nimport { messaging } from 'firebase-admin';\n\n// ... (inside execute method)\nconst token = this.getNodeParameter('token', 0) as string;\nconst title = this.getNodeParameter('title', 0) as string;\nconst body = this.getNodeParameter('body', 0) as string;\n\nconst message: messaging.Message = {\n  token,\n  notification: { title, body },\n};\n\ntry {\n  const response = await messaging().send(message);\n  returnData.push({ json: { success: true, messageId: response } });\n} catch (error) {\n  throw new Error(`Failed to send message: ${error.message}`);\n}\n```",
+        "testStrategy": "1. Create unit tests for token-based message sending\n2. Test sending messages to valid and invalid tokens\n3. Verify error handling for various failure scenarios\n4. Perform integration testing by sending actual messages to test devices",
+        "priority": "high",
+        "dependencies": [
+          3
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 5,
+        "title": "Implement Topic-based Message Sending",
+        "description": "Add functionality to send messages to FCM topics.",
+        "details": "1. Update node properties to include a field for topic\n2. Implement logic to send a message to a topic using the Firebase Admin SDK\n3. Handle response and error cases\n\nExample implementation:\n```typescript\n// ... (inside execute method)\nconst topic = this.getNodeParameter('topic', 0) as string;\nconst title = this.getNodeParameter('title', 0) as string;\nconst body = this.getNodeParameter('body', 0) as string;\n\nconst message: messaging.Message = {\n  topic,\n  notification: { title, body },\n};\n\ntry {\n  const response = await messaging().send(message);\n  returnData.push({ json: { success: true, messageId: response } });\n} catch (error) {\n  throw new Error(`Failed to send message to topic: ${error.message}`);\n}\n```",
+        "testStrategy": "1. Create unit tests for topic-based message sending\n2. Test sending messages to valid and invalid topics\n3. Verify error handling for various failure scenarios\n4. Perform integration testing by sending actual messages to test topics",
+        "priority": "medium",
+        "dependencies": [
+          4
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 6,
+        "title": "Implement Condition-based Message Sending",
+        "description": "Add functionality to send messages based on FCM conditions.",
+        "details": "1. Update node properties to include a field for condition\n2. Implement logic to send a message based on a condition using the Firebase Admin SDK\n3. Handle response and error cases\n\nExample implementation:\n```typescript\n// ... (inside execute method)\nconst condition = this.getNodeParameter('condition', 0) as string;\nconst title = this.getNodeParameter('title', 0) as string;\nconst body = this.getNodeParameter('body', 0) as string;\n\nconst message: messaging.Message = {\n  condition,\n  notification: { title, body },\n};\n\ntry {\n  const response = await messaging().send(message);\n  returnData.push({ json: { success: true, messageId: response } });\n} catch (error) {\n  throw new Error(`Failed to send message with condition: ${error.message}`);\n}\n```",
+        "testStrategy": "1. Create unit tests for condition-based message sending\n2. Test sending messages with valid and invalid conditions\n3. Verify error handling for various failure scenarios\n4. Perform integration testing by sending actual messages with different conditions",
+        "priority": "medium",
+        "dependencies": [
+          5
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 7,
+        "title": "Implement JSON Mode for Message Configuration",
+        "description": "Add an option to configure messages using raw JSON input.",
+        "details": "1. Add a toggle in node properties to switch between structured fields and JSON input\n2. Implement logic to parse and validate JSON input\n3. Use the parsed JSON to construct the FCM message\n\nExample implementation:\n```typescript\n// ... (inside execute method)\nconst useJson = this.getNodeParameter('useJson', 0) as boolean;\nlet message: messaging.Message;\n\nif (useJson) {\n  const jsonInput = this.getNodeParameter('jsonMessage', 0) as string;\n  try {\n    message = JSON.parse(jsonInput);\n  } catch (error) {\n    throw new Error(`Invalid JSON input: ${error.message}`);\n  }\n} else {\n  // Construct message from structured fields\n}\n\ntry {\n  const response = await messaging().send(message);\n  returnData.push({ json: { success: true, messageId: response } });\n} catch (error) {\n  throw new Error(`Failed to send message: ${error.message}`);\n}\n```",
+        "testStrategy": "1. Create unit tests for JSON parsing and validation\n2. Test sending messages with valid and invalid JSON inputs\n3. Verify error handling for malformed JSON\n4. Perform integration testing by sending messages configured with JSON",
+        "priority": "medium",
+        "dependencies": [
+          6
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 8,
+        "title": "Implement Advanced Notification Fields",
+        "description": "Add support for additional FCM fields like icon, sound, and click action.",
+        "details": "1. Update node properties to include fields for icon, sound, and click action\n2. Modify the message construction logic to include these fields when provided\n3. Update both structured and JSON modes to support these fields\n\nExample implementation:\n```typescript\n// ... (inside execute method)\nconst icon = this.getNodeParameter('icon', 0) as string;\nconst sound = this.getNodeParameter('sound', 0) as string;\nconst clickAction = this.getNodeParameter('clickAction', 0) as string;\n\nconst notification: messaging.Notification = {\n  title,\n  body,\n  icon: icon || undefined,\n};\n\nconst android: messaging.AndroidConfig = {\n  notification: {\n    sound: sound || undefined,\n    clickAction: clickAction || undefined,\n  },\n};\n\nconst message: messaging.Message = {\n  token, // or topic, or condition\n  notification,\n  android,\n};\n```",
+        "testStrategy": "1. Create unit tests for advanced notification fields\n2. Test sending messages with various combinations of advanced fields\n3. Verify that the fields are correctly included in the FCM payload\n4. Perform integration testing to ensure advanced fields work as expected on target devices",
+        "priority": "medium",
+        "dependencies": [
+          7
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 9,
+        "title": "Implement Message Priority and TTL",
+        "description": "Add support for setting message priority and Time-To-Live (TTL).",
+        "details": "1. Update node properties to include fields for priority and TTL\n2. Modify the message construction logic to include these fields when provided\n3. Update both structured and JSON modes to support these fields\n\nExample implementation:\n```typescript\n// ... (inside execute method)\nconst priority = this.getNodeParameter('priority', 0) as 'normal' | 'high';\nconst ttlSeconds = this.getNodeParameter('ttl', 0) as number;\n\nconst android: messaging.AndroidConfig = {\n  priority: priority === 'high' ? 'high' : 'normal',\n  ttl: ttlSeconds ? ttlSeconds * 1000 : undefined, // Convert to milliseconds\n};\n\nconst message: messaging.Message = {\n  token, // or topic, or condition\n  notification,\n  android,\n};\n```",
+        "testStrategy": "1. Create unit tests for priority and TTL settings\n2. Test sending messages with different priority levels and TTL values\n3. Verify that the fields are correctly included in the FCM payload\n4. Perform integration testing to ensure priority and TTL work as expected",
+        "priority": "medium",
+        "dependencies": [
+          8
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 10,
+        "title": "Implement Data Message Support",
+        "description": "Add support for sending data messages alongside notification messages.",
+        "details": "1. Update node properties to include a field for custom data payload\n2. Modify the message construction logic to include the data field when provided\n3. Update both structured and JSON modes to support data messages\n\nExample implementation:\n```typescript\n// ... (inside execute method)\nconst dataPayload = this.getNodeParameter('dataPayload', 0) as string;\n\nlet data: {[key: string]: string} | undefined;\nif (dataPayload) {\n  try {\n    data = JSON.parse(dataPayload);\n  } catch (error) {\n    throw new Error(`Invalid data payload JSON: ${error.message}`);\n  }\n}\n\nconst message: messaging.Message = {\n  token, // or topic, or condition\n  notification,\n  android,\n  data,\n};\n```",
+        "testStrategy": "1. Create unit tests for data message support\n2. Test sending messages with various data payloads\n3. Verify that the data field is correctly included in the FCM payload\n4. Perform integration testing to ensure data messages are received correctly on target devices",
+        "priority": "medium",
+        "dependencies": [
+          9
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 11,
+        "title": "Implement Multi-device Message Support",
+        "description": "Add support for sending messages to multiple FCM tokens simultaneously.",
+        "details": "1. Update node properties to allow input of multiple tokens\n2. Modify the execute method to handle multiple tokens\n3. Use the Firebase Admin SDK's sendMulticast method for efficient multi-device messaging\n\nExample implementation:\n```typescript\n// ... (inside execute method)\nconst tokens = this.getNodeParameter('tokens', 0) as string[];\n\nconst message: messaging.MulticastMessage = {\n  tokens,\n  notification,\n  android,\n  data,\n};\n\ntry {\n  const response = await messaging().sendMulticast(message);\n  returnData.push({\n    json: {\n      success: true,\n      successCount: response.successCount,\n      failureCount: response.failureCount,\n      responses: response.responses,\n    },\n  });\n} catch (error) {\n  throw new Error(`Failed to send multicast message: ${error.message}`);\n}\n```",
+        "testStrategy": "1. Create unit tests for multi-device message support\n2. Test sending messages to various numbers of devices (1, 10, 100, etc.)\n3. Verify correct handling of partial successes and failures\n4. Perform integration testing to ensure messages are received by multiple devices",
+        "priority": "medium",
+        "dependencies": [
+          10
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 12,
+        "title": "Implement Error Handling and Logging",
+        "description": "Enhance error handling and add logging functionality for better debugging and monitoring.",
+        "details": "1. Implement a custom error class for FCM-related errors\n2. Add detailed error messages for various failure scenarios\n3. Implement logging using n8n's built-in logger\n4. Add option in node properties to set log level\n\nExample implementation:\n```typescript\nimport { ILogger, LoggerProxy } from 'n8n-workflow';\n\nclass FCMError extends Error {\n  constructor(message: string, public code?: string) {\n    super(message);\n    this.name = 'FCMError';\n  }\n}\n\n// ... (inside execute method)\nconst logger = LoggerProxy.init(this.getNodeParameter('logLevel', 0) as ILogger.LogLevel);\n\ntry {\n  // Existing send logic\n  logger.debug('Message sent successfully', { messageId: response });\n} catch (error) {\n  logger.error('Failed to send message', { error });\n  if (error.code) {\n    throw new FCMError(`FCM Error: ${error.message}`, error.code);\n  }\n  throw new FCMError(`Unexpected error: ${error.message}`);\n}\n```",
+        "testStrategy": "1. Create unit tests for custom error handling\n2. Test various error scenarios and verify correct error messages\n3. Verify that logging works correctly at different log levels\n4. Perform integration testing to ensure errors are properly caught and logged in real scenarios",
+        "priority": "high",
+        "dependencies": [
+          11
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 13,
+        "title": "Implement In-App Messaging Support",
+        "description": "Add preliminary support for Firebase In-App Messaging.",
+        "details": "1. Research Firebase In-App Messaging API and integration possibilities\n2. Add node properties for In-App Messaging configuration\n3. Implement basic support for triggering In-App Messaging campaigns\n\nExample implementation:\n```typescript\nimport { getMessaging } from 'firebase-admin/messaging';\n\n// ... (inside execute method)\nconst useInAppMessaging = this.getNodeParameter('useInAppMessaging', 0) as boolean;\n\nif (useInAppMessaging) {\n  const campaignName = this.getNodeParameter('inAppCampaignName', 0) as string;\n  const analyticsLabel = this.getNodeParameter('analyticsLabel', 0) as string;\n\n  try {\n    await getMessaging().sendToDevice(token, {\n      data: {\n        'fiam-campaign-name': campaignName,\n        'fiam-analytics-label': analyticsLabel,\n      },\n    });\n    logger.info('In-App Messaging campaign triggered', { campaignName });\n  } catch (error) {\n    throw new FCMError(`Failed to trigger In-App Messaging: ${error.message}`);\n  }\n}\n```",
+        "testStrategy": "1. Create unit tests for In-App Messaging support\n2. Test triggering In-App Messaging campaigns with various configurations\n3. Verify correct handling of In-App Messaging specific errors\n4. Perform integration testing to ensure In-App Messages are triggered correctly on target devices",
+        "priority": "low",
+        "dependencies": [
+          12
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 14,
+        "title": "Create Comprehensive Documentation",
+        "description": "Develop detailed documentation for the Firebase Cloud Messaging node.",
+        "details": "1. Create a README.md file with the following sections:\n   - Overview\n   - Installation\n   - Configuration\n   - Usage Examples\n   - Advanced Features\n   - Troubleshooting\n2. Document each node property and its usage\n3. Provide examples for different messaging scenarios (token, topic, condition)\n4. Include information on error handling and logging\n5. Add a section on best practices for using FCM with n8n\n\nExample README structure:\n```markdown\n# n8n-nodes-firebase-cloud-message\n\nThis is a node for n8n to send push notifications via Firebase Cloud Messaging (FCM).\n\n## Installation\n\n[Provide installation instructions]\n\n## Configuration\n\n[Explain how to set up Firebase credentials]\n\n## Usage\n\n[Provide basic usage examples]\n\n## Advanced Features\n\n[Describe advanced features like multi-device messaging, In-App Messaging, etc.]\n\n## Troubleshooting\n\n[List common issues and their solutions]\n\n## Contributing\n\n[Provide guidelines for contributing to the project]\n\n## License\n\n[Include license information]\n```",
+        "testStrategy": "1. Review documentation for completeness and accuracy\n2. Verify that all features and options are properly documented\n3. Test installation and configuration steps\n4. Have team members or beta users review the documentation and provide feedback",
+        "priority": "high",
+        "dependencies": [
+          13
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 15,
+        "title": "Prepare for npm Publication",
+        "description": "Finalize the package and prepare it for publication on npm.",
+        "details": "1. Update package.json with correct metadata:\n   - name: 'n8n-nodes-firebase-cloud-message'\n   - version: '1.0.0'\n   - description\n   - author\n   - license\n   - keywords\n   - repository\n2. Create a .npmignore file to exclude unnecessary files from the package\n3. Ensure all dependencies are correctly listed in package.json\n4. Create a CHANGELOG.md file\n5. Add npm scripts for building and publishing\n6. Perform a final lint and test run\n7. Build the project and verify the output\n8. Publish to npm using `npm publish`\n\nExample package.json updates:\n```json\n{\n  \"name\": \"n8n-nodes-firebase-cloud-message\",\n  \"version\": \"1.0.0\",\n  \"description\": \"n8n node for Firebase Cloud Messaging\",\n  \"keywords\": [\"n8n\", \"node\", \"firebase\", \"fcm\", \"push-notifications\"],\n  \"license\": \"MIT\",\n  \"homepage\": \"https://github.com/your-username/n8n-nodes-firebase-cloud-message\",\n  \"author\": {\n    \"name\": \"Your Name\",\n    \"email\": \"your.email@example.com\"\n  },\n  \"repository\": {\n    \"type\": \"git\",\n    \"url\": \"git+https://github.com/your-username/n8n-nodes-firebase-cloud-message.git\"\n  },\n  \"main\": \"dist/index.js\",\n  \"scripts\": {\n    \"build\": \"tsc\",\n    \"dev\": \"tsc --watch\",\n    \"format\": \"prettier --write '**/*.ts'\",\n    \"lint\": \"eslint 'src/**/*.ts'\",\n    \"lintfix\": \"eslint 'src/**/*.ts' --fix\",\n    \"prepublishOnly\": \"npm run build && npm run lint\"\n  },\n  \"files\": [\n    \"dist\"\n  ],\n  \"n8n\": {\n    \"credentials\": [\n      \"dist/credentials/FirebaseOAuth2Api.credentials.js\"\n    ],\n    \"nodes\": [\n      \"dist/nodes/FirebaseCloudMessaging.node.js\"\n    ]\n  },\n  \"devDependencies\": {\n    \"@types/node\": \"^14.14.32\",\n    \"@typescript-eslint/eslint-plugin\": \"^4.19.0\",\n    \"@typescript-eslint/parser\": \"^4.19.0\",\n    \"eslint\": \"^7.22.0\",\n    \"eslint-plugin-import\": \"^2.22.1\",\n    \"n8n-workflow\": \"^0.94.0\",\n    \"prettier\": \"^2.2.1\",\n    \"typescript\": \"~4.2.0\"\n  },\n  \"dependencies\": {\n    \"firebase-admin\": \"^11.9.0\"\n  }\n}\n```",
+        "testStrategy": "1. Verify that all metadata in package.json is correct\n2. Test the npm package locally using npm pack\n3. Verify that the built package includes all necessary files and excludes unnecessary ones\n4. Perform a dry run of npm publish using npm publish --dry-run\n5. Test the published package by installing it in a test n8n instance",
+        "priority": "high",
+        "dependencies": [
+          14
+        ],
+        "status": "pending",
+        "subtasks": []
+      }
+    ],
+    "metadata": {
+      "created": "2025-06-23T20:33:05.771Z",
+      "updated": "2025-06-23T20:38:44.957Z",
+      "description": "Tasks for master context"
+    }
+  }
+}

@@ -1,0 +1,82 @@
+# Task ID: 15
+# Title: Prepare for npm Publication
+# Status: pending
+# Dependencies: 14
+# Priority: high
+# Description: Finalize the package and prepare it for publication on npm.
+# Details:
+1. Update package.json with correct metadata:
+   - name: 'n8n-nodes-firebase-cloud-message'
+   - version: '1.0.0'
+   - description
+   - author
+   - license
+   - keywords
+   - repository
+2. Create a .npmignore file to exclude unnecessary files from the package
+3. Ensure all dependencies are correctly listed in package.json
+4. Create a CHANGELOG.md file
+5. Add npm scripts for building and publishing
+6. Perform a final lint and test run
+7. Build the project and verify the output
+8. Publish to npm using `npm publish`
+
+Example package.json updates:
+```json
+{
+  "name": "n8n-nodes-firebase-cloud-message",
+  "version": "1.0.0",
+  "description": "n8n node for Firebase Cloud Messaging",
+  "keywords": ["n8n", "node", "firebase", "fcm", "push-notifications"],
+  "license": "MIT",
+  "homepage": "https://github.com/your-username/n8n-nodes-firebase-cloud-message",
+  "author": {
+    "name": "Your Name",
+    "email": "your.email@example.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/your-username/n8n-nodes-firebase-cloud-message.git"
+  },
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "format": "prettier --write '**/*.ts'",
+    "lint": "eslint 'src/**/*.ts'",
+    "lintfix": "eslint 'src/**/*.ts' --fix",
+    "prepublishOnly": "npm run build && npm run lint"
+  },
+  "files": [
+    "dist"
+  ],
+  "n8n": {
+    "credentials": [
+      "dist/credentials/FirebaseOAuth2Api.credentials.js"
+    ],
+    "nodes": [
+      "dist/nodes/FirebaseCloudMessaging.node.js"
+    ]
+  },
+  "devDependencies": {
+    "@types/node": "^14.14.32",
+    "@typescript-eslint/eslint-plugin": "^4.19.0",
+    "@typescript-eslint/parser": "^4.19.0",
+    "eslint": "^7.22.0",
+    "eslint-plugin-import": "^2.22.1",
+    "n8n-workflow": "^0.94.0",
+    "prettier": "^2.2.1",
+    "typescript": "~4.2.0"
+  },
+  "dependencies": {
+    "firebase-admin": "^11.9.0"
+  }
+}
+```
+
+# Test Strategy:
+1. Verify that all metadata in package.json is correct
+2. Test the npm package locally using npm pack
+3. Verify that the built package includes all necessary files and excludes unnecessary ones
+4. Perform a dry run of npm publish using npm publish --dry-run
+5. Test the published package by installing it in a test n8n instance

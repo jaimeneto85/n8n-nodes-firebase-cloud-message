@@ -1,0 +1,41 @@
+# Task ID: 7
+# Title: Implement JSON Mode for Message Configuration
+# Status: pending
+# Dependencies: 6
+# Priority: medium
+# Description: Add an option to configure messages using raw JSON input.
+# Details:
+1. Add a toggle in node properties to switch between structured fields and JSON input
+2. Implement logic to parse and validate JSON input
+3. Use the parsed JSON to construct the FCM message
+
+Example implementation:
+```typescript
+// ... (inside execute method)
+const useJson = this.getNodeParameter('useJson', 0) as boolean;
+let message: messaging.Message;
+
+if (useJson) {
+  const jsonInput = this.getNodeParameter('jsonMessage', 0) as string;
+  try {
+    message = JSON.parse(jsonInput);
+  } catch (error) {
+    throw new Error(`Invalid JSON input: ${error.message}`);
+  }
+} else {
+  // Construct message from structured fields
+}
+
+try {
+  const response = await messaging().send(message);
+  returnData.push({ json: { success: true, messageId: response } });
+} catch (error) {
+  throw new Error(`Failed to send message: ${error.message}`);
+}
+```
+
+# Test Strategy:
+1. Create unit tests for JSON parsing and validation
+2. Test sending messages with valid and invalid JSON inputs
+3. Verify error handling for malformed JSON
+4. Perform integration testing by sending messages configured with JSON

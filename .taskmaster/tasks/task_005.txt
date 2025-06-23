@@ -1,0 +1,36 @@
+# Task ID: 5
+# Title: Implement Topic-based Message Sending
+# Status: pending
+# Dependencies: 4
+# Priority: medium
+# Description: Add functionality to send messages to FCM topics.
+# Details:
+1. Update node properties to include a field for topic
+2. Implement logic to send a message to a topic using the Firebase Admin SDK
+3. Handle response and error cases
+
+Example implementation:
+```typescript
+// ... (inside execute method)
+const topic = this.getNodeParameter('topic', 0) as string;
+const title = this.getNodeParameter('title', 0) as string;
+const body = this.getNodeParameter('body', 0) as string;
+
+const message: messaging.Message = {
+  topic,
+  notification: { title, body },
+};
+
+try {
+  const response = await messaging().send(message);
+  returnData.push({ json: { success: true, messageId: response } });
+} catch (error) {
+  throw new Error(`Failed to send message to topic: ${error.message}`);
+}
+```
+
+# Test Strategy:
+1. Create unit tests for topic-based message sending
+2. Test sending messages to valid and invalid topics
+3. Verify error handling for various failure scenarios
+4. Perform integration testing by sending actual messages to test topics

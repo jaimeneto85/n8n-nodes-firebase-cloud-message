@@ -1,0 +1,43 @@
+{
+  "name": "n8n-nodes-firebase-cloud-message",
+  "version": "1.0.0",
+  "description": "n8n node to send push notifications via Firebase Cloud Messaging",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "lint": "eslint src/**/*.ts",
+    "test": "jest",
+    "prepare": "npm run build"
+  },
+  "keywords": [
+    "n8n",
+    "n8n-node",
+    "n8n-community-node",
+    "firebase",
+    "firebase-cloud-messaging",
+    "fcm",
+    "push-notifications"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "firebase-admin": "^11.9.0",
+    "n8n-core": "^1.10.0",
+    "n8n-workflow": "^1.10.0",
+    "task-master-ai": "^0.18.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.7",
+    "typescript": "^5.4.2"
+  },
+  "n8n": {
+    "n8nNodesApiVersion": 1,
+    "nodes": [
+      "dist/nodes/FirebaseCloudMessage/FirebaseCloudMessage.node.js"
+    ],
+    "credentials": [
+      "dist/credentials/FirebaseCloudMessageApi.credentials.js"
+    ]
+  }
+}

@@ -1,0 +1,34 @@
+# Task ID: 9
+# Title: Implement Message Priority and TTL
+# Status: pending
+# Dependencies: 8
+# Priority: medium
+# Description: Add support for setting message priority and Time-To-Live (TTL).
+# Details:
+1. Update node properties to include fields for priority and TTL
+2. Modify the message construction logic to include these fields when provided
+3. Update both structured and JSON modes to support these fields
+
+Example implementation:
+```typescript
+// ... (inside execute method)
+const priority = this.getNodeParameter('priority', 0) as 'normal' | 'high';
+const ttlSeconds = this.getNodeParameter('ttl', 0) as number;
+
+const android: messaging.AndroidConfig = {
+  priority: priority === 'high' ? 'high' : 'normal',
+  ttl: ttlSeconds ? ttlSeconds * 1000 : undefined, // Convert to milliseconds
+};
+
+const message: messaging.Message = {
+  token, // or topic, or condition
+  notification,
+  android,
+};
+```
+
+# Test Strategy:
+1. Create unit tests for priority and TTL settings
+2. Test sending messages with different priority levels and TTL values
+3. Verify that the fields are correctly included in the FCM payload
+4. Perform integration testing to ensure priority and TTL work as expected

@@ -1,0 +1,144 @@
+<context>
+# Overview  
+O n8n-nodes-firebase-cloud-message é um nó personalizado para a plataforma de automação n8n que permite enviar notificações push através do serviço Firebase Cloud Messaging (FCM). Este nó facilita a integração do FCM em fluxos de trabalho de automação, permitindo o envio de notificações para dispositivos móveis sem a necessidade de criar integrações personalizadas ou usar webhooks externos.
+
+# Core Features  
+- **Autenticação com Firebase**: Suporte completo para autenticação via OAuth 2.0 usando chave JSON de Conta de Serviço do Google.
+- **Múltiplos Modos de Envio**: Capacidade de enviar mensagens para tokens específicos, tópicos ou grupos condicionais.
+- **Interface Flexível**: Opção entre configuração por campos estruturados ou JSON bruto para maior flexibilidade.
+- **Campos de Notificação Completos**: Suporte para todos os campos essenciais de notificações (título, corpo, ícone, som, ações).
+- **Recursos Avançados**: Opções adicionais como prioridade de mensagem e suporte preliminar a In-App Messaging.
+
+# User Experience  
+## Personas
+- **Desenvolvedor de Automação**: Profissional que cria fluxos de trabalho no n8n e precisa adicionar notificações push como parte do processo.
+- **Administrador de Sistemas**: Usuário que configura alertas e notificações automatizadas para equipes.
+
+## Fluxos de Usuário
+1. O usuário adiciona o nó FCM ao fluxo de trabalho no n8n
+2. Configura a autenticação usando uma chave JSON do Google Cloud
+3. Seleciona o modo de envio (token, tópico ou condição)
+4. Escolhe entre configuração por campos estruturados ou JSON personalizado
+5. Configura os detalhes da notificação
+6. Testa o envio dentro do ambiente n8n
+7. Integra o nó no fluxo de trabalho completo
+
+## Considerações de UI/UX
+- Interface consistente com outros nós do n8n
+- Campos organizados logicamente por função
+- Alternância clara entre modos de configuração (campos vs. JSON)
+- Mensagens de erro descritivas e orientadas à solução
+</context>
+<PRD>
+# Technical Architecture  
+## Componentes do Sistema
+- **Módulo de Autenticação**: Implementa autenticação OAuth 2.0 com Firebase usando chaves JSON de Conta de Serviço.
+- **Construtor de Payload**: Transforma os inputs do usuário (campos estruturados ou JSON) em payload válido para a API FCM.
+- **Adaptador de Envio**: Gerencia diferentes modos de envio (token, tópico, condição).
+- **Manipulador de Resposta**: Processa e formata as respostas da API FCM para o n8n.
+
+## Modelo de Dados
+- **Credenciais**: OAuth2 com suporte a chave JSON
+- **Configuração de Mensagem**: 
+  - Destino (token/array de tokens, tópico, condição)
+  - Conteúdo da notificação (título, corpo, etc.)
+  - Opções avançadas (prioridade, som, dados personalizados)
+  
+## Integrações
+- **Firebase Cloud Messaging API**: Endpoint principal para envio de mensagens.
+- **Google Auth API**: Para autenticação e renovação de tokens.
+
+## Requisitos de Infraestrutura
+- Compatibilidade com n8n v0.160.0 ou superior
+- Dependência mínima de bibliotecas externas
+- Suporte à TypeScript para tipagem segura
+
+# Development Roadmap  
+## Fase 1: MVP
+- Configuração inicial do projeto e estrutura de arquivos
+- Implementação básica de autenticação com Firebase
+- Suporte para envio para token único
+- Interface básica com campos essenciais (título, corpo)
+
+## Fase 2: Funcionalidade Completa
+- Suporte para múltiplos modos de envio (tokens, tópicos, condições)
+- Interface completa com todos os campos de notificação
+- Alternância entre modo JSON e campos estruturados
+- Validação de inputs e tratamento de erros
+
+## Fase 3: Recursos Avançados
+- Campos adicionais como prioridade e sons personalizados
+- Suporte preliminar para In-App Messaging
+- Exemplos e documentação detalhada
+- Testes abrangentes
+
+## Fase 4: Finalização e Publicação
+- Refinamento da documentação e exemplos de uso
+- Publicação do pacote no npm
+- Instruções de instalação para a comunidade n8n
+
+# Logical Dependency Chain
+1. **Base do Projeto**: Configuração inicial do TypeScript, dependências e estrutura de arquivos
+2. **Autenticação**: Implementar e testar autenticação com Firebase antes de qualquer funcionalidade de envio
+3. **Interface Básica**: Criar campos essenciais para permitir teste manual durante o desenvolvimento
+4. **Lógica de Envio Simples**: Implementar envio para token único como funcionalidade mínima viável
+5. **Modos de Envio Adicionais**: Expandir para suporte a tópicos e condições
+6. **Campos Avançados**: Adicionar campos opcionais e avançados
+7. **Alternância de Modos**: Implementar alternância entre JSON e campos estruturados
+8. **Validação e Tratamento de Erros**: Refinar validação de inputs e tratamento de erros
+9. **Testes e Documentação**: Finalizar testes e documentação antes da publicação
+
+# Risks and Mitigations  
+## Desafios Técnicos
+- **Risco**: Complexidade na autenticação com Firebase
+  - **Mitigação**: Usar bibliotecas oficiais do Google e seguir documentação atualizada
+- **Risco**: Mudanças na API do Firebase Cloud Messaging
+  - **Mitigação**: Manter-se atualizado com a documentação do FCM e implementar testes regulares
+
+## Desafios do MVP
+- **Risco**: Escopo excessivo para uma primeira versão
+  - **Mitigação**: Foco inicial em token único e campos essenciais, expandindo incrementalmente
+
+## Limitações de Recursos
+- **Risco**: Tempo limitado para implementação completa
+  - **Mitigação**: Priorização clara de funcionalidades e desenvolvimento incremental
+- **Risco**: Limitações na API do n8n para alguns recursos avançados
+  - **Mitigação**: Pesquisar outras implementações de nós e adaptar conforme necessário
+
+# Appendix  
+## Especificações Técnicas
+- **Firebase Cloud Messaging API**: [https://firebase.google.com/docs/cloud-messaging/server](https://firebase.google.com/docs/cloud-messaging/server)
+- **n8n Custom Nodes**: [https://docs.n8n.io/integrations/creating-nodes/](https://docs.n8n.io/integrations/creating-nodes/)
+- **OAuth 2.0 com Service Account**: [https://developers.google.com/identity/protocols/oauth2/service-account](https://developers.google.com/identity/protocols/oauth2/service-account)
+
+## Formatos de Payload
+```json
+// Exemplo de payload para token único
+{
+  "message": {
+    "token": "DEVICE_TOKEN",
+    "notification": {
+      "title": "Título da Notificação",
+      "body": "Corpo da mensagem com detalhes"
+    },
+    "android": {
+      "priority": "high",
+      "notification": {
+        "sound": "default"
+      }
+    }
+  }
+}
+
+// Exemplo de payload para tópico
+{
+  "message": {
+    "topic": "news",
+    "notification": {
+      "title": "Nova Atualização",
+      "body": "Confira as novidades!"
+    }
+  }
+}
+```
+</PRD> 

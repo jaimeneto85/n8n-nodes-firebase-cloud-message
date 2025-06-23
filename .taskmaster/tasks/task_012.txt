@@ -1,0 +1,43 @@
+# Task ID: 12
+# Title: Implement Error Handling and Logging
+# Status: pending
+# Dependencies: 11
+# Priority: high
+# Description: Enhance error handling and add logging functionality for better debugging and monitoring.
+# Details:
+1. Implement a custom error class for FCM-related errors
+2. Add detailed error messages for various failure scenarios
+3. Implement logging using n8n's built-in logger
+4. Add option in node properties to set log level
+
+Example implementation:
+```typescript
+import { ILogger, LoggerProxy } from 'n8n-workflow';
+
+class FCMError extends Error {
+  constructor(message: string, public code?: string) {
+    super(message);
+    this.name = 'FCMError';
+  }
+}
+
+// ... (inside execute method)
+const logger = LoggerProxy.init(this.getNodeParameter('logLevel', 0) as ILogger.LogLevel);
+
+try {
+  // Existing send logic
+  logger.debug('Message sent successfully', { messageId: response });
+} catch (error) {
+  logger.error('Failed to send message', { error });
+  if (error.code) {
+    throw new FCMError(`FCM Error: ${error.message}`, error.code);
+  }
+  throw new FCMError(`Unexpected error: ${error.message}`);
+}
+```
+
+# Test Strategy:
+1. Create unit tests for custom error handling
+2. Test various error scenarios and verify correct error messages
+3. Verify that logging works correctly at different log levels
+4. Perform integration testing to ensure errors are properly caught and logged in real scenarios
