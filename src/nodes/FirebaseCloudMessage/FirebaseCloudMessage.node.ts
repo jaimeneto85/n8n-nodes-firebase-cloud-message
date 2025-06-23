@@ -4,6 +4,7 @@ import {
 	INodeExecutionData,
 	INodeType,
 	INodeTypeDescription,
+	NodeConnectionType,
 	NodeOperationError,
 } from 'n8n-workflow';
 
@@ -23,14 +24,15 @@ export class FirebaseCloudMessage implements INodeType {
 		},
 		inputs: [
 			{
-				name: 'main',
-				type: 'main',
+				displayName: 'Main',
+				type: NodeConnectionType.Main,
+				required: true,
 			},
 		],
 		outputs: [
 			{
-				name: 'main',
-				type: 'main',
+				displayName: 'Main',
+				type: NodeConnectionType.Main,
 			},
 		],
 		credentials: [

@@ -49,8 +49,19 @@ class FirebaseCloudMessage {
             defaults: {
                 name: 'Firebase Cloud Message',
             },
-            inputs: ['main'],
-            outputs: ['main'],
+            inputs: [
+                {
+                    displayName: 'Main',
+                    type: "main" /* NodeConnectionType.Main */,
+                    required: true,
+                },
+            ],
+            outputs: [
+                {
+                    displayName: 'Main',
+                    type: "main" /* NodeConnectionType.Main */,
+                },
+            ],
             credentials: [
                 {
                     name: 'firebaseCloudMessageApi',
