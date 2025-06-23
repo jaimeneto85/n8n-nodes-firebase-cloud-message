@@ -101,57 +101,83 @@
     {
       "id": 2,
       "title": "Implement OAuth2 Authentication Module",
-      "description": "Create the credentials module for Firebase authentication using OAuth 2.0 with Service Account JSON key.",
-      "details": "1. Create credentials file at `src/credentials/FirebaseCloudMessageApi.credentials.ts`\n2. Implement OAuth2 authentication with Service Account JSON:\n   ```typescript\n   import { ICredentialType, INodeProperties } from 'n8n-workflow';\n\n   export class FirebaseCloudMessageApi implements ICredentialType {\n     name = 'firebaseCloudMessageApi';\n     displayName = 'Firebase Cloud Message API';\n     documentationUrl = 'https://firebase.google.com/docs/cloud-messaging/server';\n     properties: INodeProperties[] = [\n       {\n         displayName: 'Service Account JSON',\n         name: 'serviceAccountJson',\n         type: 'string',\n         typeOptions: {\n           rows: 10,\n         },\n         default: '',\n         required: true,\n         description: 'Service account key JSON for Firebase project',\n       },\n     ];\n   }\n   ```\n3. Add helper functions to parse and validate the Service Account JSON\n4. Implement token generation and refresh logic using the firebase-admin SDK",
-      "testStrategy": "Create a test script that validates a sample Service Account JSON and verifies it can successfully authenticate with Firebase. Test both valid and invalid credentials to ensure proper error handling.",
-      "priority": "high",
+      "description": "Complete and enhance the credentials module for Firebase authentication using OAuth 2.0 with Service Account JSON key.",
+      "status": "pending",
       "dependencies": [
         1
       ],
-      "status": "pending",
+      "priority": "high",
+      "details": "1. The credentials file has already been created at `src/credentials/FirebaseCloudMessageApi.credentials.ts`\n2. Basic OAuth2 authentication with Service Account JSON has been implemented\n3. Now we need to enhance the implementation with:\n   - Advanced validation for Service Account JSON\n   - Improved error messages\n   - Additional Firebase configuration options\n4. Refine token generation and refresh logic using the firebase-admin SDK",
+      "testStrategy": "Create a test script that validates a sample Service Account JSON and verifies it can successfully authenticate with Firebase. Test both valid and invalid credentials to ensure proper error handling. Include tests for the new validation features and configuration options.",
       "subtasks": [
         {
           "id": 1,
           "title": "Create the Credentials File",
           "description": "Design and implement the credentials file according to n8n standards, defining the necessary properties for OAuth2 and service account JSON authentication.",
+          "status": "done",
           "dependencies": [],
           "details": "Follow the n8n credentials file structure, including import statements, class definition, and property declarations for all required authentication fields. Ensure the file is named appropriately (e.g., <node-name>.credentials.ts) and placed in the correct directory.",
-          "status": "pending",
           "testStrategy": ""
         },
         {
           "id": 2,
-          "title": "Implement OAuth2 Authentication Logic",
+          "title": "Implement Basic OAuth2 Authentication Logic",
           "description": "Develop the logic to handle OAuth2 authentication flows, including obtaining and managing access tokens using the credentials defined in the credentials file.",
+          "status": "done",
           "dependencies": [
             1
           ],
           "details": "Integrate OAuth2 logic that interacts with the authentication endpoints, processes authorization codes, and securely stores tokens as per n8n's credential management.",
-          "status": "pending",
           "testStrategy": ""
         },
         {
           "id": 3,
-          "title": "Add Helper Functions for Parsing and Validation",
-          "description": "Create utility functions to parse the service account JSON and validate all credential fields for correctness and completeness.",
-          "dependencies": [
-            1
-          ],
-          "details": "Implement robust parsing and validation logic to ensure that the credentials provided by the user are valid and usable for authentication, handling errors gracefully.",
+          "title": "Implement Advanced Service Account JSON Validation",
+          "description": "Enhance the existing implementation with robust validation for the Service Account JSON to ensure all required fields are present and correctly formatted.",
           "status": "pending",
-          "testStrategy": ""
+          "dependencies": [
+            1,
+            2
+          ],
+          "details": "Create validation functions that check for:\n- Required fields (project_id, private_key, client_email, etc.)\n- Proper JSON format\n- Valid private key format\n- Expiration dates\n- Proper permissions\nImplement detailed validation error messages that help users troubleshoot credential issues.",
+          "testStrategy": "Test validation with various malformed JSON inputs, missing fields, and invalid formats to ensure proper error detection and reporting."
         },
         {
           "id": 4,
-          "title": "Implement Token Generation and Refresh Logic",
-          "description": "Develop mechanisms to generate new tokens and refresh expired tokens as needed, ensuring seamless authentication for ongoing API requests.",
+          "title": "Improve Error Handling and User Feedback",
+          "description": "Enhance error handling throughout the authentication process to provide clear, actionable feedback to users when authentication fails.",
+          "status": "pending",
           "dependencies": [
             2,
             3
           ],
-          "details": "Utilize the parsed and validated credentials to request new tokens and refresh them automatically when expired, integrating with n8n's secure storage and retrieval systems.",
+          "details": "Implement comprehensive error handling that:\n- Provides specific error messages for different failure scenarios\n- Suggests potential solutions for common errors\n- Logs detailed information for debugging\n- Handles network failures gracefully\n- Presents user-friendly error messages in the UI",
+          "testStrategy": "Test error scenarios including network failures, invalid credentials, expired tokens, and permission issues to verify appropriate error messages are displayed."
+        },
+        {
+          "id": 5,
+          "title": "Add Additional Firebase Configuration Options",
+          "description": "Extend the credentials interface to support additional Firebase configuration options beyond the basic Service Account JSON.",
           "status": "pending",
-          "testStrategy": ""
+          "dependencies": [
+            1,
+            2
+          ],
+          "details": "Add new configuration options to the credentials interface such as:\n- Database URL override\n- Storage bucket configuration\n- Region selection\n- Custom token expiration\n- API version selection\n- Custom endpoints for testing environments",
+          "testStrategy": "Test that each new configuration option correctly affects the Firebase initialization and API interactions."
+        },
+        {
+          "id": 6,
+          "title": "Refine Token Generation and Refresh Logic",
+          "description": "Optimize the token generation and refresh mechanisms to ensure efficient and reliable authentication.",
+          "status": "pending",
+          "dependencies": [
+            2,
+            3,
+            4
+          ],
+          "details": "Enhance the existing token management with:\n- Proactive token refresh before expiration\n- Caching mechanisms to reduce authentication calls\n- Retry logic for failed token requests\n- Proper cleanup of expired tokens\n- Support for multiple Firebase projects",
+          "testStrategy": "Test token lifecycle including generation, usage, expiration, and refresh. Verify performance with high-frequency API calls and simulate token expiration scenarios."
         }
       ]
     },
@@ -674,7 +700,7 @@
         "testStrategy": "Manually verify the project structure and run `npm install` to ensure all dependencies are correctly installed. Check if TypeScript compilation works by running `npm run build`.",
         "priority": "high",
         "dependencies": [],
-        "status": "in-progress",
+        "status": "done",
         "subtasks": []
       },
       {
@@ -687,7 +713,7 @@
         "dependencies": [
           1
         ],
-        "status": "pending",
+        "status": "in-progress",
         "subtasks": []
       },
       {
@@ -863,7 +889,7 @@
     ],
     "metadata": {
       "created": "2025-06-23T20:33:05.771Z",
-      "updated": "2025-06-23T20:46:54.944Z",
+      "updated": "2025-06-23T20:51:18.465Z",
       "description": "Tasks for master context"
     }
   }

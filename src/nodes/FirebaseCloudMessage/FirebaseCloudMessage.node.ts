@@ -75,11 +75,27 @@ export class FirebaseCloudMessage implements INodeType {
 			try {
 				firebaseApp = admin.app();
 			} catch (error: any) {
-				// Initialize the app if it hasn't been initialized yet
-				firebaseApp = admin.initializeApp({
+				// Initialize the app with all credential options
+				const initOptions: admin.AppOptions = {
 					credential: admin.credential.cert(serviceAccountKey),
-				});
+				};
+
+				// Add optional configurations if provided
+				if (credentials.databaseURL) {
+					initOptions.databaseURL = credentials.databaseURL as string;
+				}
+
+				if (credentials.storageBucket) {
+					initOptions.storageBucket = credentials.storageBucket as string;
+				}
+
+				// Initialize Firebase with all configured options
+				firebaseApp = admin.initializeApp(initOptions);
 			}
+			
+			// Log successful initialization
+			this.logger.info('Firebase Cloud Messaging initialized successfully');
+			
 		} catch (error: any) {
 			throw new NodeOperationError(
 				this.getNode(),
@@ -88,7 +104,22 @@ export class FirebaseCloudMessage implements INodeType {
 			);
 		}
 		
-		// For now, return empty data for testing setup
-		return [items];
+		// Implement sending logic based on selected operation (to be expanded in future tasks)
+		const operation = this.getNodeParameter('operation', 0) as string;
+		
+		try {
+			if (operation === 'sendToToken') {
+				this.logger.debug('Send to token operation selected, but not yet implemented fully');
+				// Implementation will be added in future tasks
+			}
+
+			return [items];
+		} catch (error: any) {
+			throw new NodeOperationError(
+				this.getNode(),
+				`Firebase Cloud Messaging operation failed: ${error.message}`,
+				{ itemIndex: 0 },
+			);
+		}
 	}
 } 

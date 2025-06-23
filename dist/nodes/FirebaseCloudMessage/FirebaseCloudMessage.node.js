@@ -100,17 +100,38 @@ class FirebaseCloudMessage {
                 firebaseApp = admin.app();
             }
             catch (error) {
-                // Initialize the app if it hasn't been initialized yet
-                firebaseApp = admin.initializeApp({
+                // Initialize the app with all credential options
+                const initOptions = {
                     credential: admin.credential.cert(serviceAccountKey),
-                });
+                };
+                // Add optional configurations if provided
+                if (credentials.databaseURL) {
+                    initOptions.databaseURL = credentials.databaseURL;
+                }
+                if (credentials.storageBucket) {
+                    initOptions.storageBucket = credentials.storageBucket;
+                }
+                // Initialize Firebase with all configured options
+                firebaseApp = admin.initializeApp(initOptions);
             }
+            // Log successful initialization
+            this.logger.info('Firebase Cloud Messaging initialized successfully');
         }
         catch (error) {
             throw new n8n_workflow_1.NodeOperationError(this.getNode(), `Firebase initialization failed: ${error.message}`, { itemIndex: 0 });
         }
-        // For now, return empty data for testing setup
-        return [items];
+        // Implement sending logic based on selected operation (to be expanded in future tasks)
+        const operation = this.getNodeParameter('operation', 0);
+        try {
+            if (operation === 'sendToToken') {
+                this.logger.debug('Send to token operation selected, but not yet implemented fully');
+                // Implementation will be added in future tasks
+            }
+            return [items];
+        }
+        catch (error) {
+            throw new n8n_workflow_1.NodeOperationError(this.getNode(), `Firebase Cloud Messaging operation failed: ${error.message}`, { itemIndex: 0 });
+        }
     }
 }
 exports.FirebaseCloudMessage = FirebaseCloudMessage;
