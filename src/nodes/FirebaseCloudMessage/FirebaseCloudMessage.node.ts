@@ -519,10 +519,18 @@ export class FirebaseCloudMessage implements INodeType {
 						}
 					}
 					
-					// Validate token(s)
-					const invalidTokens = tokens.filter((token: string) => !validateToken(token));
-					if (invalidTokens.length > 0) {
-						throw new Error(`Invalid FCM token format: ${invalidTokens.join(', ')}`);
+					// Validate token(s) if not using JSON parameters
+					if (!jsonParameters && message) {
+						if ('tokens' in message && Array.isArray(message.tokens)) {
+							const invalidTokens = message.tokens.filter((token: string) => !validateToken(token));
+							if (invalidTokens.length > 0) {
+								throw new Error(`Invalid FCM token format: ${invalidTokens.join(', ')}`);
+							}
+						} else if ('token' in message && typeof message.token === 'string') {
+							if (!validateToken(message.token)) {
+								throw new Error(`Invalid FCM token format: ${message.token}`);
+							}
+						}
 					}
 					
 					// Send the message
