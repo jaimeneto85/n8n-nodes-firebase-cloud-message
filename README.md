@@ -1,4 +1,4 @@
-# n8n-nodes-firebase-cloud-message
+# @jaimeflneto/n8n-nodes-firebase-cloud-message
 
 Este é um nó comunitário n8n que permite enviar notificações push via Firebase Cloud Messaging (FCM).
 
