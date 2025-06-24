@@ -1,42 +1,10 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || (function () {
-    var ownKeys = function(o) {
-        ownKeys = Object.getOwnPropertyNames || function (o) {
-            var ar = [];
-            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
-            return ar;
-        };
-        return ownKeys(o);
-    };
-    return function (mod) {
-        if (mod && mod.__esModule) return mod;
-        var result = {};
-        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
-        __setModuleDefault(result, mod);
-        return result;
-    };
-})();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.FirebaseCloudMessage = void 0;
 const n8n_workflow_1 = require("n8n-workflow");
-const admin = __importStar(require("firebase-admin"));
 const FirebaseCloudMessageApi_credentials_1 = require("../../credentials/FirebaseCloudMessageApi.credentials");
+const firebase_utils_1 = require("../../utils/firebase.utils");
+const validation_utils_1 = require("../../utils/validation.utils");
 class FirebaseCloudMessage {
     constructor() {
         this.description = {
@@ -347,11 +315,14 @@ class FirebaseCloudMessage {
         var _a;
         const items = this.getInputData();
         const returnData = [];
-        // Initialize Firebase Admin SDK
+        // Get credentials
         const credentials = await this.getCredentials('firebaseCloudMessageApi');
         let firebaseApp;
         let projectId;
         try {
+            // Initialize Firebase Admin SDK using our utility function
+            firebaseApp = await (0, firebase_utils_1.validateAndInitializeFirebase)(credentials);
+            // Get project ID from service account key
             const serviceAccountKey = JSON.parse(credentials.serviceAccountKey);
             projectId = serviceAccountKey.project_id;
             // Get the TokenManager instance from the credentials
@@ -359,43 +330,18 @@ class FirebaseCloudMessage {
             const tokenManager = credentialsObject.getTokenManager();
             // Check if token caching is enabled
             const enableTokenCaching = credentials.enableTokenCaching !== false;
-            const tokenRefreshBuffer = credentials.tokenRefreshBuffer ?
-                Number(credentials.tokenRefreshBuffer) * 60 * 1000 : 5 * 60 * 1000; // Default to 5 minutes
             // Function to generate a new Firebase token
             const generateFirebaseToken = async () => {
                 this.logger.debug('Generating new Firebase authentication token');
-                // Initialize the app if not already initialized
-                try {
-                    firebaseApp = admin.app();
-                }
-                catch (error) {
-                    // Initialize the app with all credential options
-                    const initOptions = {
-                        credential: admin.credential.cert(serviceAccountKey),
-                    };
-                    // Add optional configurations if provided
-                    if (credentials.databaseURL) {
-                        initOptions.databaseURL = credentials.databaseURL;
-                    }
-                    if (credentials.storageBucket) {
-                        initOptions.storageBucket = credentials.storageBucket;
-                    }
-                    // Initialize Firebase with all configured options
-                    firebaseApp = admin.initializeApp(initOptions);
-                }
                 // For Firebase Admin SDK, we don't actually need to generate a token
                 // since it handles token management internally, but we return a placeholder
                 // to work with our token manager
                 return `firebase-admin-token-${Date.now()}`;
             };
-            // Get or generate the token
+            // Get or generate the token if token caching is enabled
             if (enableTokenCaching) {
                 await tokenManager.getToken(projectId, generateFirebaseToken);
                 this.logger.debug('Using cached or new Firebase token');
-            }
-            else {
-                // If caching is disabled, just initialize Firebase directly
-                await generateFirebaseToken();
             }
             // Log successful initialization
             this.logger.info('Firebase Cloud Messaging initialized successfully');
@@ -434,6 +380,7 @@ class FirebaseCloudMessage {
                         }
                         else {
                             token = this.getNodeParameter('deviceToken', i, '');
+                            tokens = [token];
                             if (!token) {
                                 throw new n8n_workflow_1.NodeOperationError(this.getNode(), 'Device token is required', { itemIndex: i });
                             }
@@ -520,17 +467,31 @@ class FirebaseCloudMessage {
                             }; // Using any to avoid type conflicts
                         }
                     }
+                    // Validate token(s) if not using JSON parameters
+                    if (!jsonParameters && message) {
+                        if ('tokens' in message && Array.isArray(message.tokens)) {
+                            const invalidTokens = message.tokens.filter((token) => !(0, validation_utils_1.validateToken)(token));
+                            if (invalidTokens.length > 0) {
+                                throw new Error(`Invalid FCM token format: ${invalidTokens.join(', ')}`);
+                            }
+                        }
+                        else if ('token' in message && typeof message.token === 'string') {
+                            if (!(0, validation_utils_1.validateToken)(message.token)) {
+                                throw new Error(`Invalid FCM token format: ${message.token}`);
+                            }
+                        }
+                    }
                     // Send the message
                     let result;
                     if ('tokens' in message) {
                         // Send multicast message
                         this.logger.debug(`Sending multicast message to ${(_a = message.tokens) === null || _a === void 0 ? void 0 : _a.length} tokens`);
-                        result = await admin.messaging().sendMulticast(message);
+                        result = await (0, firebase_utils_1.getMessaging)(firebaseApp).sendMulticast(message);
                     }
                     else {
                         // Send single message
                         this.logger.debug(`Sending message to token: ${message.token}`);
-                        result = await admin.messaging().send(message);
+                        result = await (0, firebase_utils_1.getMessaging)(firebaseApp).send(message);
                     }
                     returnData.push({
                         json: {
@@ -554,6 +515,10 @@ class FirebaseCloudMessage {
                         const topic = this.getNodeParameter('topic', i, '');
                         if (!topic) {
                             throw new n8n_workflow_1.NodeOperationError(this.getNode(), 'Topic name is required', { itemIndex: i });
+                        }
+                        // Validate topic format
+                        if (!(0, validation_utils_1.validateTopic)(topic)) {
+                            throw new Error('Invalid topic format. Topics must match pattern [a-zA-Z0-9-_.~%]+');
                         }
                         // Ensure topic is properly formatted
                         const formattedTopic = topic.startsWith('/topics/') ? topic : `/topics/${topic}`;
@@ -613,7 +578,7 @@ class FirebaseCloudMessage {
                     }
                     // Send the message
                     this.logger.debug(`Sending message to topic: ${messagePayload.topic}`);
-                    const result = await admin.messaging().send(messagePayload);
+                    const result = await (0, firebase_utils_1.getMessaging)(firebaseApp).send(messagePayload);
                     returnData.push({
                         json: {
                             success: true,
@@ -636,6 +601,10 @@ class FirebaseCloudMessage {
                         const condition = this.getNodeParameter('condition', i, '');
                         if (!condition) {
                             throw new n8n_workflow_1.NodeOperationError(this.getNode(), 'Condition is required', { itemIndex: i });
+                        }
+                        // Validate condition format
+                        if (!(0, validation_utils_1.validateCondition)(condition)) {
+                            throw new Error('Invalid condition format. Must include "in topics" and logical operators (&&, ||)');
                         }
                         // Get notification content
                         const messageFields = this.getNodeParameter('message.messageFields', i, {});
@@ -693,7 +662,7 @@ class FirebaseCloudMessage {
                     }
                     // Send the message
                     this.logger.debug(`Sending message with condition: ${messagePayload.condition}`);
-                    const result = await admin.messaging().send(messagePayload);
+                    const result = await (0, firebase_utils_1.getMessaging)(firebaseApp).send(messagePayload);
                     returnData.push({
                         json: {
                             success: true,
@@ -720,7 +689,7 @@ class FirebaseCloudMessage {
                     const formattedTopic = topic.replace(/^\/topics\//, '');
                     // Subscribe tokens to topic
                     this.logger.debug(`Subscribing ${registrationTokens.length} tokens to topic: ${formattedTopic}`);
-                    const result = await admin.messaging().subscribeToTopic(registrationTokens, formattedTopic);
+                    const result = await (0, firebase_utils_1.getMessaging)(firebaseApp).subscribeToTopic(registrationTokens, formattedTopic);
                     returnData.push({
                         json: {
                             success: true,
@@ -747,7 +716,7 @@ class FirebaseCloudMessage {
                     const formattedTopic = topic.replace(/^\/topics\//, '');
                     // Unsubscribe tokens from topic
                     this.logger.debug(`Unsubscribing ${registrationTokens.length} tokens from topic: ${formattedTopic}`);
-                    const result = await admin.messaging().unsubscribeFromTopic(registrationTokens, formattedTopic);
+                    const result = await (0, firebase_utils_1.getMessaging)(firebaseApp).unsubscribeFromTopic(registrationTokens, formattedTopic);
                     returnData.push({
                         json: {
                             success: true,
