@@ -10,6 +10,7 @@ import {
 
 import * as admin from 'firebase-admin';
 import { FirebaseCloudMessageApi } from '../../credentials/FirebaseCloudMessageApi.credentials';
+import { validateAndInitializeFirebase, getMessaging } from '../../utils/firebase.utils';
 
 export class FirebaseCloudMessage implements INodeType {
 	description: INodeTypeDescription = {
@@ -320,13 +321,17 @@ export class FirebaseCloudMessage implements INodeType {
 		const items = this.getInputData();
 		const returnData: INodeExecutionData[] = [];
 		
-		// Initialize Firebase Admin SDK
+		// Get credentials
 		const credentials = await this.getCredentials('firebaseCloudMessageApi');
 		
 		let firebaseApp: admin.app.App;
 		let projectId: string;
 		
 		try {
+			// Initialize Firebase Admin SDK using our utility function
+			firebaseApp = await validateAndInitializeFirebase(credentials);
+			
+			// Get project ID from service account key
 			const serviceAccountKey = JSON.parse(credentials.serviceAccountKey as string);
 			projectId = serviceAccountKey.project_id;
 			
@@ -336,34 +341,10 @@ export class FirebaseCloudMessage implements INodeType {
 			
 			// Check if token caching is enabled
 			const enableTokenCaching = credentials.enableTokenCaching !== false;
-			const tokenRefreshBuffer = credentials.tokenRefreshBuffer ? 
-				Number(credentials.tokenRefreshBuffer) * 60 * 1000 : 5 * 60 * 1000; // Default to 5 minutes
 			
 			// Function to generate a new Firebase token
 			const generateFirebaseToken = async (): Promise<string> => {
 				this.logger.debug('Generating new Firebase authentication token');
-				
-				// Initialize the app if not already initialized
-				try {
-					firebaseApp = admin.app();
-				} catch (error: any) {
-					// Initialize the app with all credential options
-					const initOptions: admin.AppOptions = {
-						credential: admin.credential.cert(serviceAccountKey),
-					};
-
-					// Add optional configurations if provided
-					if (credentials.databaseURL) {
-						initOptions.databaseURL = credentials.databaseURL as string;
-					}
-
-					if (credentials.storageBucket) {
-						initOptions.storageBucket = credentials.storageBucket as string;
-					}
-
-					// Initialize Firebase with all configured options
-					firebaseApp = admin.initializeApp(initOptions);
-				}
 				
 				// For Firebase Admin SDK, we don't actually need to generate a token
 				// since it handles token management internally, but we return a placeholder
@@ -371,13 +352,10 @@ export class FirebaseCloudMessage implements INodeType {
 				return `firebase-admin-token-${Date.now()}`;
 			};
 			
-			// Get or generate the token
+			// Get or generate the token if token caching is enabled
 			if (enableTokenCaching) {
 				await tokenManager.getToken(projectId, generateFirebaseToken);
 				this.logger.debug('Using cached or new Firebase token');
-			} else {
-				// If caching is disabled, just initialize Firebase directly
-				await generateFirebaseToken();
 			}
 			
 			// Log successful initialization
@@ -537,11 +515,11 @@ export class FirebaseCloudMessage implements INodeType {
 					if ('tokens' in message) {
 						// Send multicast message
 						this.logger.debug(`Sending multicast message to ${(message as any).tokens?.length} tokens`);
-						result = await admin.messaging().sendMulticast(message as any);
+						result = await getMessaging(firebaseApp).sendMulticast(message as any);
 					} else {
 						// Send single message
 						this.logger.debug(`Sending message to token: ${(message as any).token}`);
-						result = await admin.messaging().send(message as any);
+						result = await getMessaging(firebaseApp).send(message as any);
 					}
 					
 					returnData.push({
@@ -638,7 +616,7 @@ export class FirebaseCloudMessage implements INodeType {
 					
 					// Send the message
 					this.logger.debug(`Sending message to topic: ${messagePayload.topic}`);
-					const result = await admin.messaging().send(messagePayload);
+					const result = await getMessaging(firebaseApp).send(messagePayload);
 					
 					returnData.push({
 						json: {
@@ -731,7 +709,7 @@ export class FirebaseCloudMessage implements INodeType {
 					
 					// Send the message
 					this.logger.debug(`Sending message with condition: ${messagePayload.condition}`);
-					const result = await admin.messaging().send(messagePayload);
+					const result = await getMessaging(firebaseApp).send(messagePayload);
 					
 					returnData.push({
 						json: {
@@ -776,7 +754,7 @@ export class FirebaseCloudMessage implements INodeType {
 					
 					// Subscribe tokens to topic
 					this.logger.debug(`Subscribing ${registrationTokens.length} tokens to topic: ${formattedTopic}`);
-					const result = await admin.messaging().subscribeToTopic(registrationTokens, formattedTopic);
+					const result = await getMessaging(firebaseApp).subscribeToTopic(registrationTokens, formattedTopic);
 					
 					returnData.push({
 						json: {
@@ -821,7 +799,7 @@ export class FirebaseCloudMessage implements INodeType {
 					
 					// Unsubscribe tokens from topic
 					this.logger.debug(`Unsubscribing ${registrationTokens.length} tokens from topic: ${formattedTopic}`);
-					const result = await admin.messaging().unsubscribeFromTopic(registrationTokens, formattedTopic);
+					const result = await getMessaging(firebaseApp).unsubscribeFromTopic(registrationTokens, formattedTopic);
 					
 					returnData.push({
 						json: {
