@@ -1,6 +1,6 @@
 {
   "name": "@jaimeflneto/n8n-nodes-firebase-cloud-message",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "n8n node to send push notifications via Firebase Cloud Messaging",
   "main": "dist/index.js",
   "scripts": {
