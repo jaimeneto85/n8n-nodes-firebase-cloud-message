@@ -27,7 +27,7 @@ node_modules/
 # Task-master
 .cursor/
 .roo/
-# .taskmaster/
+.taskmaster/
 .roo*
 .wind*
 

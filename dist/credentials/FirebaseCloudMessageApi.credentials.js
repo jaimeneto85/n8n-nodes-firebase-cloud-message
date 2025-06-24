@@ -2,6 +2,134 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.FirebaseCloudMessageApi = void 0;
 /**
+ * Token Manager for Firebase Authentication
+ * Handles caching, refresh, and cleanup of tokens
+ */
+class TokenManager {
+    constructor() {
+        this.MAX_RETRY_ATTEMPTS = 3;
+        this.REFRESH_BUFFER_MS = 5 * 60 * 1000; // 5 minutes before expiry
+        this.TOKEN_EXPIRY_MS = 60 * 60 * 1000; // 1 hour default expiry
+        this.tokenCache = new Map();
+        this.refreshTimers = new Map();
+        this.retryAttempts = new Map();
+    }
+    static getInstance() {
+        if (!TokenManager.instance) {
+            TokenManager.instance = new TokenManager();
+        }
+        return TokenManager.instance;
+    }
+    /**
+     * Get a token from cache or generate a new one
+     * @param projectId Firebase project ID
+     * @param generateTokenFn Function to generate a new token
+     */
+    async getToken(projectId, generateTokenFn) {
+        const cachedToken = this.tokenCache.get(projectId);
+        // Return cached token if it exists and is not expired
+        if (cachedToken && cachedToken.expiry > Date.now()) {
+            return cachedToken.token;
+        }
+        // Generate new token
+        try {
+            const token = await generateTokenFn();
+            this.setToken(projectId, token);
+            return token;
+        }
+        catch (error) {
+            return this.handleTokenError(projectId, generateTokenFn, error);
+        }
+    }
+    /**
+     * Set a token in the cache and schedule refresh
+     * @param projectId Firebase project ID
+     * @param token The token to cache
+     */
+    setToken(projectId, token) {
+        const expiry = Date.now() + this.TOKEN_EXPIRY_MS;
+        // Store token in cache
+        this.tokenCache.set(projectId, { token, expiry });
+        // Reset retry counter on successful token generation
+        this.retryAttempts.set(projectId, 0);
+        // Clear any existing refresh timer
+        if (this.refreshTimers.has(projectId)) {
+            clearTimeout(this.refreshTimers.get(projectId));
+        }
+        // Schedule token refresh before expiry
+        const refreshTime = this.TOKEN_EXPIRY_MS - this.REFRESH_BUFFER_MS;
+        const timer = setTimeout(() => {
+            this.tokenCache.delete(projectId);
+        }, refreshTime);
+        this.refreshTimers.set(projectId, timer);
+    }
+    /**
+     * Handle token generation errors with retry logic
+     * @param projectId Firebase project ID
+     * @param generateTokenFn Function to generate a new token
+     * @param error The error that occurred
+     */
+    async handleTokenError(projectId, generateTokenFn, error) {
+        // Initialize or increment retry counter
+        const currentAttempts = this.retryAttempts.get(projectId) || 0;
+        this.retryAttempts.set(projectId, currentAttempts + 1);
+        // If under max retries, try again
+        if (currentAttempts < this.MAX_RETRY_ATTEMPTS) {
+            // Exponential backoff
+            const backoffMs = Math.pow(2, currentAttempts) * 1000;
+            await new Promise(resolve => setTimeout(resolve, backoffMs));
+            try {
+                const token = await generateTokenFn();
+                this.setToken(projectId, token);
+                return token;
+            }
+            catch (retryError) {
+                // If still failing after retry, throw error
+                if (currentAttempts + 1 >= this.MAX_RETRY_ATTEMPTS) {
+                    throw retryError;
+                }
+                return this.handleTokenError(projectId, generateTokenFn, retryError);
+            }
+        }
+        // Max retries exceeded
+        throw error;
+    }
+    /**
+     * Clean up expired tokens and timers
+     */
+    cleanupExpiredTokens() {
+        const now = Date.now();
+        // Clean up expired tokens
+        for (const [projectId, { expiry }] of this.tokenCache.entries()) {
+            if (expiry <= now) {
+                this.tokenCache.delete(projectId);
+                // Clear associated refresh timer
+                if (this.refreshTimers.has(projectId)) {
+                    clearTimeout(this.refreshTimers.get(projectId));
+                    this.refreshTimers.delete(projectId);
+                }
+            }
+        }
+    }
+    /**
+     * Support for multiple Firebase projects
+     * @param projectIds Array of project IDs to pre-initialize
+     * @param generateTokenFn Function to generate tokens for each project
+     */
+    async initializeProjects(projectIds, generateTokenFn) {
+        const tokenPromises = projectIds.map(async (projectId) => {
+            try {
+                const token = await generateTokenFn(projectId);
+                this.setToken(projectId, token);
+            }
+            catch (error) {
+                console.error(`Failed to initialize token for project ${projectId}:`, error);
+            }
+        });
+        await Promise.all(tokenPromises);
+    }
+}
+/**
  * Validates Firebase Service Account JSON
  * @param serviceAccountJson The JSON string to validate
  */
@@ -102,6 +230,27 @@ class FirebaseCloudMessageApi {
                 description: 'Firebase Cloud Messaging region',
                 required: false,
             },
+            {
+                displayName: 'Enable Token Caching',
+                name: 'enableTokenCaching',
+                type: 'boolean',
+                default: true,
+                description: 'Whether to cache authentication tokens to reduce API calls',
+                required: false,
+            },
+            {
+                displayName: 'Token Refresh Buffer (minutes)',
+                name: 'tokenRefreshBuffer',
+                type: 'number',
+                default: 5,
+                description: 'Minutes before token expiry to refresh the token',
+                displayOptions: {
+                    show: {
+                        enableTokenCaching: [true],
+                    },
+                },
+                required: false,
+            },
         ];
         this.authenticate = {
             type: 'generic',
@@ -132,6 +281,12 @@ class FirebaseCloudMessageApi {
                 errorMessage: error instanceof Error ? error.message : 'Unknown error',
             };
         }
+    }
+    /**
+     * Get the token manager instance
+     */
+    getTokenManager() {
+        return TokenManager.getInstance();
     }
 }
 exports.FirebaseCloudMessageApi = FirebaseCloudMessageApi;
