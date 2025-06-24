@@ -4,12 +4,13 @@
   "description": "n8n node to send push notifications via Firebase Cloud Messaging",
   "main": "dist/index.js",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && npm run copy-icons",
     "dev": "tsc --watch",
     "lint": "eslint src/**/*.ts",
     "test": "jest",
     "prepare": "npm run build",
-    "format": "prettier --write \"src/**/*.ts\""
+    "format": "prettier --write \"src/**/*.ts\"",
+    "copy-icons": "mkdir -p dist/nodes/FirebaseCloudMessage/icons && cp -r src/nodes/FirebaseCloudMessage/icons/* dist/nodes/FirebaseCloudMessage/icons/"
   },
   "keywords": [
     "n8n",
