@@ -33,6 +33,7 @@ node_modules/
 .clinerules/
 .trae/
 AG*.md
+CL*.md
 
 # Task files
 # tasks.json
