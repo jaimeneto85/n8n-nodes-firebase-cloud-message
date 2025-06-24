@@ -30,6 +30,9 @@ node_modules/
 .taskmaster/
 .roo*
 .wind*
+.clinerules/
+.trae/
+AG*.md
 
 # Task files
 # tasks.json
