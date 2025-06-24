@@ -1,0 +1,135 @@
+{
+  "name": "Send Notification to Topic",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 1
+            }
+          ]
+        }
+      },
+      "id": "b8b8eb4e-e4b1-5b4e-af06-8b6d58fc065d",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [
+        250,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Sample data - in a real scenario, this would come from a database or another service\nreturn {\n  topic: \"news\",\n  title: \"Breaking News\",\n  body: \"This is a breaking news notification sent to all subscribers!\",\n  data: {\n    category: \"world\",\n    articleId: \"12345\",\n    timestamp: Date.now()\n  }\n};"
+      },
+      "id": "e5f1f92d-3e2g-5f33-997d-e4d88f5b9c9a",
+      "name": "Prepare Topic Notification",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        470,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "sendToTopic",
+        "topic": "={{ $node[\"Prepare Topic Notification\"].json[\"topic\"] }}",
+        "options": {
+          "notification": {
+            "title": "={{ $node[\"Prepare Topic Notification\"].json[\"title\"] }}",
+            "body": "={{ $node[\"Prepare Topic Notification\"].json[\"body\"] }}"
+          },
+          "data": "={{ $node[\"Prepare Topic Notification\"].json[\"data\"] }}",
+          "android": {
+            "priority": "high",
+            "notification": {
+              "clickAction": "OPEN_NEWS_ACTIVITY"
+            }
+          }
+        }
+      },
+      "id": "9e0c8f9d-7g6b-5c8b-0f2e-4d3e5f6g7h8i",
+      "name": "Firebase Cloud Message",
+      "type": "n8n-nodes-firebase-cloud-message",
+      "typeVersion": 1,
+      "position": [
+        690,
+        300
+      ],
+      "credentials": {
+        "firebaseCloudMessageApi": {
+          "id": "1",
+          "name": "Firebase Cloud Message Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrCreate",
+        "fileName": "={{ 'notification_log_' + $now.format('YYYY-MM-DD') + '.txt' }}",
+        "options": {
+          "append": true
+        },
+        "content": "={{ $now.format('YYYY-MM-DD HH:mm:ss') + ' - Sent notification to topic \"' + $node[\"Prepare Topic Notification\"].json[\"topic\"] + '\" with title \"' + $node[\"Prepare Topic Notification\"].json[\"title\"] + '\"\\n' }}"
+      },
+      "id": "1a2b3c4d-5e6f-7g8h-9i0j-1k2l3m4n5o6p",
+      "name": "Write Log",
+      "type": "n8n-nodes-base.writeFile",
+      "typeVersion": 1,
+      "position": [
+        910,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Prepare Topic Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Topic Notification": {
+      "main": [
+        [
+          {
+            "node": "Firebase Cloud Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Firebase Cloud Message": {
+      "main": [
+        [
+          {
+            "node": "Write Log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {},
+  "staticData": null,
+  "tags": [
+    {
+      "name": "example",
+      "color": "#00cc00"
+    }
+  ],
+  "versionId": "2b3c4d5e-6f7g-8h9i-0j1k-2l3m4n5o6p7q"
+} 

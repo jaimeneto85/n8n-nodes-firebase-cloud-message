@@ -8,7 +8,8 @@
     "dev": "tsc --watch",
     "lint": "eslint src/**/*.ts",
     "test": "jest",
-    "prepare": "npm run build"
+    "prepare": "npm run build",
+    "format": "prettier --write \"src/**/*.ts\""
   },
   "keywords": [
     "n8n",
@@ -19,7 +20,15 @@
     "fcm",
     "push-notifications"
   ],
-  "author": "",
+  "author": {
+    "name": "Jaime Neto",
+    "email": "jaimeflneto@gmail.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jaimeflneto/n8n-nodes-firebase-cloud-message.git"
+  },
+  "homepage": "https://github.com/jaimeflneto/n8n-nodes-firebase-cloud-message",
   "license": "MIT",
   "dependencies": {
     "firebase-admin": "^11.9.0",
@@ -43,5 +52,8 @@
     "credentials": [
       "dist/credentials/FirebaseCloudMessageApi.credentials.js"
     ]
-  }
+  },
+  "files": [
+    "dist"
+  ]
 }

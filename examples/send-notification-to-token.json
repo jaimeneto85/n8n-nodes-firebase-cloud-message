@@ -1,0 +1,101 @@
+{
+  "name": "Send Notification to Token",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 5
+            }
+          ]
+        }
+      },
+      "id": "a7a7da3d-d3a0-4a3d-9fe5-7a5c47eb954c",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [
+        250,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Sample data - in a real scenario, this would come from a database or another service\nreturn {\n  token: \"DEVICE_TOKEN_HERE\",\n  title: \"Important Notification\",\n  body: \"This is an example notification sent from n8n workflow!\",\n  imageUrl: \"https://example.com/image.jpg\",\n  data: {\n    action: \"open_screen\",\n    screen: \"home\",\n    timestamp: Date.now()\n  }\n};"
+      },
+      "id": "d4f0e81c-2d1f-4e22-886c-d3c77e4a8b89",
+      "name": "Prepare Notification Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        470,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "sendToToken",
+        "token": "={{ $node[\"Prepare Notification Data\"].json[\"token\"] }}",
+        "options": {
+          "notification": {
+            "title": "={{ $node[\"Prepare Notification Data\"].json[\"title\"] }}",
+            "body": "={{ $node[\"Prepare Notification Data\"].json[\"body\"] }}",
+            "imageUrl": "={{ $node[\"Prepare Notification Data\"].json[\"imageUrl\"] }}"
+          },
+          "data": "={{ $node[\"Prepare Notification Data\"].json[\"data\"] }}"
+        }
+      },
+      "id": "8d9b7e8c-6f5a-4b7a-9e1d-3c2e4f5d6b8a",
+      "name": "Firebase Cloud Message",
+      "type": "n8n-nodes-firebase-cloud-message",
+      "typeVersion": 1,
+      "position": [
+        690,
+        300
+      ],
+      "credentials": {
+        "firebaseCloudMessageApi": {
+          "id": "1",
+          "name": "Firebase Cloud Message Account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Prepare Notification Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Notification Data": {
+      "main": [
+        [
+          {
+            "node": "Firebase Cloud Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {},
+  "staticData": null,
+  "tags": [
+    {
+      "name": "example",
+      "color": "#00cc00"
+    }
+  ],
+  "versionId": "1a2b3c4d-5e6f-7g8h-9i0j-1k2l3m4n5o6p"
+} 

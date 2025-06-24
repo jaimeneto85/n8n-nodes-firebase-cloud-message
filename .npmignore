@@ -1,0 +1,42 @@
+# Source code
+src/
+test/
+tests/
+examples/
+
+# Development files
+.git/
+.github/
+.vscode/
+.idea/
+.editorconfig
+.eslintrc.js
+.gitignore
+.prettierrc
+jest.config.js
+tsconfig.json
+*.tgz
+
+# Documentation
+AGENTS.md
+CLAUDE.md
+RESUMO.md
+TASKS.md
+prd.txt
+
+# Task Master files
+.taskmaster/
+
+# Node modules
+node_modules/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Other
+.DS_Store
+Thumbs.db 
