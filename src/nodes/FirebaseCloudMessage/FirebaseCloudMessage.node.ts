@@ -11,6 +11,14 @@ import {
 import * as admin from 'firebase-admin';
 import { FirebaseCloudMessageApi } from '../../credentials/FirebaseCloudMessageApi.credentials';
 import { validateAndInitializeFirebase, getMessaging } from '../../utils/firebase.utils';
+import { 
+	validateToken, 
+	validateTopic, 
+	validateCondition, 
+	validateMessagePayload,
+	validateJsonFormat 
+} from '../../utils/validation.utils';
+import { handleFirebaseError, createErrorResponse } from '../../utils/error.utils';
 
 export class FirebaseCloudMessage implements INodeType {
 	description: INodeTypeDescription = {
@@ -413,6 +421,7 @@ export class FirebaseCloudMessage implements INodeType {
 							}
 						} else {
 							token = this.getNodeParameter('deviceToken', i, '') as string;
+							tokens = [token];
 							
 							if (!token) {
 								throw new NodeOperationError(
@@ -510,6 +519,12 @@ export class FirebaseCloudMessage implements INodeType {
 						}
 					}
 					
+					// Validate token(s)
+					const invalidTokens = tokens.filter((token: string) => !validateToken(token));
+					if (invalidTokens.length > 0) {
+						throw new Error(`Invalid FCM token format: ${invalidTokens.join(', ')}`);
+					}
+					
 					// Send the message
 					let result;
 					if ('tokens' in message) {
@@ -549,6 +564,11 @@ export class FirebaseCloudMessage implements INodeType {
 								'Topic name is required',
 								{ itemIndex: i },
 							);
+						}
+						
+						// Validate topic format
+						if (!validateTopic(topic)) {
+							throw new Error('Invalid topic format. Topics must match pattern [a-zA-Z0-9-_.~%]+');
 						}
 						
 						// Ensure topic is properly formatted
@@ -645,6 +665,11 @@ export class FirebaseCloudMessage implements INodeType {
 								'Condition is required',
 								{ itemIndex: i },
 							);
+						}
+						
+						// Validate condition format
+						if (!validateCondition(condition)) {
+							throw new Error('Invalid condition format. Must include "in topics" and logical operators (&&, ||)');
 						}
 						
 						// Get notification content
