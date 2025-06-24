@@ -1,5 +1,5 @@
 {
-  "name": "n8n-nodes-firebase-cloud-message",
+  "name": "@jaimeflneto/n8n-nodes-firebase-cloud-message",
   "version": "1.0.0",
   "description": "n8n node to send push notifications via Firebase Cloud Messaging",
   "main": "dist/index.js",
@@ -26,9 +26,9 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jaimeflneto/n8n-nodes-firebase-cloud-message.git"
+    "url": "git+https://github.com/jaimeneto85/n8n-nodes-firebase-cloud-message.git"
   },
-  "homepage": "https://github.com/jaimeflneto/n8n-nodes-firebase-cloud-message",
+  "homepage": "https://github.com/jaimeneto85/n8n-nodes-firebase-cloud-message",
   "license": "MIT",
   "dependencies": {
     "firebase-admin": "^11.9.0",

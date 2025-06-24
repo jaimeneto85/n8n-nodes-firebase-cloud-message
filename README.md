@@ -19,19 +19,19 @@ Instale a partir da aba Community Nodes do n8n:
 
 1. No painel do n8n, navegue até **Configurações > Nós Comunitários**
 2. Selecione **Instalar**
-3. Digite `n8n-nodes-firebase-cloud-message` em **Digite o nome do pacote npm**
+3. Digite `@jaimeflneto/n8n-nodes-firebase-cloud-message` em **Digite o nome do pacote npm**
 4. Clique em **Instalar**
 
 Ou via npm:
 
 ```bash
-npm install n8n-nodes-firebase-cloud-message
+npm install @jaimeflneto/n8n-nodes-firebase-cloud-message
 ```
 
 Para instalação global:
 
 ```bash
-npm install -g n8n-nodes-firebase-cloud-message
+npm install -g @jaimeflneto/n8n-nodes-firebase-cloud-message
 ```
 
 ## Operações
@@ -190,19 +190,19 @@ Install from the n8n Community Nodes tab:
 
 1. In the n8n panel, navigate to **Settings > Community Nodes**
 2. Select **Install**
-3. Enter `n8n-nodes-firebase-cloud-message` in **Enter npm package name**
+3. Enter `@jaimeflneto/n8n-nodes-firebase-cloud-message` in **Enter npm package name**
 4. Click **Install**
 
 Or via npm:
 
 ```bash
-npm install n8n-nodes-firebase-cloud-message
+npm install @jaimeflneto/n8n-nodes-firebase-cloud-message
 ```
 
 For global installation:
 
 ```bash
-npm install -g n8n-nodes-firebase-cloud-message
+npm install -g @jaimeflneto/n8n-nodes-firebase-cloud-message
 ```
 
 ## Operations
