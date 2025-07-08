@@ -343,31 +343,8 @@ export class FirebaseCloudMessage implements INodeType {
 			const serviceAccountKey = JSON.parse(credentials.serviceAccountKey as string);
 			projectId = serviceAccountKey.project_id;
 			
-			// Get the TokenManager instance from the credentials
-			const credentialsObject = new FirebaseCloudMessageApi();
-			const tokenManager = credentialsObject.getTokenManager();
-			
-			// Check if token caching is enabled
-			const enableTokenCaching = credentials.enableTokenCaching !== false;
-			
-			// Function to generate a new Firebase token
-			const generateFirebaseToken = async (): Promise<string> => {
-				this.logger.debug('Generating new Firebase authentication token');
-				
-				// For Firebase Admin SDK, we don't actually need to generate a token
-				// since it handles token management internally, but we return a placeholder
-				// to work with our token manager
-				return `firebase-admin-token-${Date.now()}`;
-			};
-			
-			// Get or generate the token if token caching is enabled
-			if (enableTokenCaching) {
-				await tokenManager.getToken(projectId, generateFirebaseToken);
-				this.logger.debug('Using cached or new Firebase token');
-			}
-			
 			// Log successful initialization
-			this.logger.info('Firebase Cloud Messaging initialized successfully');
+			this.logger.info(`Firebase Cloud Messaging initialized successfully for project: ${projectId}`);
 			
 		} catch (error: any) {
 			throw new NodeOperationError(

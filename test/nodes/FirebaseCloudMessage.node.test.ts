@@ -12,58 +12,27 @@ jest.mock('../../src/utils/firebase.utils', () => {
 });
 
 // Mock IExecuteFunctions
+const mockGetCredentials = jest.fn();
+const mockGetInputData = jest.fn();
+const mockGetNodeParameter = jest.fn();
+const mockGetNode = jest.fn();
+const mockLogger = {
+	debug: jest.fn(),
+	info: jest.fn(),
+	warn: jest.fn(),
+	error: jest.fn(),
+};
+const mockHelpers = {
+	returnJsonArray: jest.fn(),
+};
+
 const mockExecuteFunctions = {
-	getCredentials: jest.fn().mockResolvedValue({
-		serviceAccountKey: JSON.stringify({
-			type: 'service_account',
-			project_id: 'test-project',
-			private_key_id: 'key-id',
-			private_key: '-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC7VJTUt9Us8cKj\nMzEfYyjiWA4R4/M2bS1GB4t7NXp98C3SC6dVMvDuictGeurT8jNbvJZHtCSuYEvu\nNMoSfm76oqFvAp8Gy0iz5sxjZmSnXyCdPEovGhLa0VzMaQ8s+CLOyS56YyCFGeJZ\n-----END PRIVATE KEY-----\n',
-			client_email: 'test@test-project.gserviceaccount.com',
-			client_id: 'client-id',
-		}),
-		enableTokenCaching: true,
-	}),
-	getInputData: jest.fn().mockReturnValue([{}]),
-	getNodeParameter: jest.fn().mockImplementation((parameterName: string, itemIndex: number) => {
-		if (parameterName === 'operation') {
-			return 'sendToToken';
-		}
-		if (parameterName === 'jsonParameters') {
-			return false;
-		}
-		if (parameterName === 'multipleTokens') {
-			return false;
-		}
-		if (parameterName === 'deviceToken') {
-			return 'test-token';
-		}
-		if (parameterName === 'message.messageFields') {
-			return {
-				title: 'Test Title',
-				body: 'Test Body',
-			};
-		}
-		if (parameterName === 'messageType') {
-			return 'notification';
-		}
-		return undefined;
-	}),
-	getNode: jest.fn().mockReturnValue({
-		name: 'Firebase Cloud Message',
-		type: 'n8n-nodes-base.firebaseCloudMessage',
-		typeVersion: 1,
-		position: [0, 0],
-	}),
-	logger: {
-		debug: jest.fn(),
-		info: jest.fn(),
-		warn: jest.fn(),
-		error: jest.fn(),
-	},
-	helpers: {
-		returnJsonArray: jest.fn(),
-	},
+	getCredentials: mockGetCredentials,
+	getInputData: mockGetInputData,
+	getNodeParameter: mockGetNodeParameter,
+	getNode: mockGetNode,
+	logger: mockLogger,
+	helpers: mockHelpers,
 } as unknown as IExecuteFunctions;
 
 describe('FirebaseCloudMessage Node', () => {
@@ -74,7 +43,7 @@ describe('FirebaseCloudMessage Node', () => {
 		firebaseCloudMessage = new FirebaseCloudMessage();
 		
 		// Mock getCredentials
-		mockExecuteFunctions.getCredentials.mockResolvedValue({
+		mockGetCredentials.mockResolvedValue({
 			serviceAccountKey: JSON.stringify({
 				type: 'service_account',
 				project_id: 'test-project',
@@ -83,14 +52,13 @@ describe('FirebaseCloudMessage Node', () => {
 				client_email: 'test@test-project.gserviceaccount.com',
 				client_id: 'client-id',
 			}),
-			enableTokenCaching: true,
 		});
 		
 		// Mock getInputData
-		mockExecuteFunctions.getInputData.mockReturnValue([{}]);
+		mockGetInputData.mockReturnValue([{}]);
 		
 		// Mock getNodeParameter
-		mockExecuteFunctions.getNodeParameter.mockImplementation((parameterName: string, itemIndex: number) => {
+		mockGetNodeParameter.mockImplementation((parameterName: string, itemIndex: number) => {
 			if (parameterName === 'operation') {
 				return 'sendToToken';
 			}
@@ -100,9 +68,9 @@ describe('FirebaseCloudMessage Node', () => {
 			if (parameterName === 'multipleTokens') {
 				return false;
 			}
-			if (parameterName === 'deviceToken') {
-				return 'test-token';
-			}
+					if (parameterName === 'deviceToken') {
+			return 'c8KsTxDAT4eGtmQn6Hso_y:APA91bHq1_6VKF-FqBZWY7D0XjLm2sK9YN4Vp1J8kQX6S7LN3R8B_test_token_that_is_long_enough_to_pass_validation_with_colon';
+		}
 			if (parameterName === 'message.messageFields') {
 				return {
 					title: 'Test Title',
@@ -116,7 +84,7 @@ describe('FirebaseCloudMessage Node', () => {
 		});
 		
 		// Mock getNode
-		mockExecuteFunctions.getNode.mockReturnValue({
+		mockGetNode.mockReturnValue({
 			name: 'Firebase Cloud Message',
 			type: 'n8n-nodes-base.firebaseCloudMessage',
 			typeVersion: 1,
@@ -141,9 +109,9 @@ describe('FirebaseCloudMessage Node', () => {
 			await firebaseCloudMessage.execute.call(mockExecuteFunctions);
 			
 			// Assert
-			expect(mockExecuteFunctions.getCredentials).toHaveBeenCalledWith('firebaseCloudMessageApi');
+			expect(mockGetCredentials).toHaveBeenCalledWith('firebaseCloudMessageApi');
 			expect(firebaseUtils.validateAndInitializeFirebase).toHaveBeenCalled();
-			expect(mockExecuteFunctions.logger.info).toHaveBeenCalledWith('Firebase Cloud Messaging initialized successfully');
+			expect(mockLogger.info).toHaveBeenCalledWith('Firebase Cloud Messaging initialized successfully for project: test-project');
 		});
 		
 		it('should handle Firebase initialization errors', async () => {
@@ -152,7 +120,7 @@ describe('FirebaseCloudMessage Node', () => {
 			
 			// Act & Assert
 			await expect(firebaseCloudMessage.execute.call(mockExecuteFunctions)).rejects.toThrow(NodeOperationError);
-			expect(mockExecuteFunctions.getCredentials).toHaveBeenCalledWith('firebaseCloudMessageApi');
+			expect(mockGetCredentials).toHaveBeenCalledWith('firebaseCloudMessageApi');
 		});
 		
 		it('should use getMessaging utility for sending messages', async () => {
@@ -165,4 +133,4 @@ describe('FirebaseCloudMessage Node', () => {
 			expect(messagingInstance.send).toHaveBeenCalled();
 		});
 	});
-}); 
+});

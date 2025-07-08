@@ -2,7 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.FirebaseCloudMessage = void 0;
 const n8n_workflow_1 = require("n8n-workflow");
-const FirebaseCloudMessageApi_credentials_1 = require("../../credentials/FirebaseCloudMessageApi.credentials");
 const firebase_utils_1 = require("../../utils/firebase.utils");
 const validation_utils_1 = require("../../utils/validation.utils");
 class FirebaseCloudMessage {
@@ -325,26 +324,8 @@ class FirebaseCloudMessage {
             // Get project ID from service account key
             const serviceAccountKey = JSON.parse(credentials.serviceAccountKey);
             projectId = serviceAccountKey.project_id;
-            // Get the TokenManager instance from the credentials
-            const credentialsObject = new FirebaseCloudMessageApi_credentials_1.FirebaseCloudMessageApi();
-            const tokenManager = credentialsObject.getTokenManager();
-            // Check if token caching is enabled
-            const enableTokenCaching = credentials.enableTokenCaching !== false;
-            // Function to generate a new Firebase token
-            const generateFirebaseToken = async () => {
-                this.logger.debug('Generating new Firebase authentication token');
-                // For Firebase Admin SDK, we don't actually need to generate a token
-                // since it handles token management internally, but we return a placeholder
-                // to work with our token manager
-                return `firebase-admin-token-${Date.now()}`;
-            };
-            // Get or generate the token if token caching is enabled
-            if (enableTokenCaching) {
-                await tokenManager.getToken(projectId, generateFirebaseToken);
-                this.logger.debug('Using cached or new Firebase token');
-            }
             // Log successful initialization
-            this.logger.info('Firebase Cloud Messaging initialized successfully');
+            this.logger.info(`Firebase Cloud Messaging initialized successfully for project: ${projectId}`);
         }
         catch (error) {
             throw new n8n_workflow_1.NodeOperationError(this.getNode(), `Firebase initialization failed: ${error.message}`, { itemIndex: 0 });

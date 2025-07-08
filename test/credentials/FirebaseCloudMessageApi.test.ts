@@ -49,195 +49,142 @@ const invalidEmailServiceAccountJson = JSON.stringify({
   client_id: '123456789'
 });
 
-describe('FirebaseCloudMessageApi Credential Tests', () => {
-  let firebaseCredential: FirebaseCloudMessageApi;
+describe('FirebaseCloudMessageApi', () => {
+	let firebaseCredential: FirebaseCloudMessageApi;
 
-  beforeEach(() => {
-    firebaseCredential = new FirebaseCloudMessageApi();
-  });
+	beforeEach(() => {
+		firebaseCredential = new FirebaseCloudMessageApi();
+	});
 
-  describe('validateCredentials', () => {
-    it('should validate valid service account JSON', async () => {
-      const result = await firebaseCredential.validateCredentials({
-        serviceAccountKey: validServiceAccountJson,
-      });
+	describe('credential properties', () => {
+		it('should have correct name and display name', () => {
+			expect(firebaseCredential.name).toBe('firebaseCloudMessageApi');
+			expect(firebaseCredential.displayName).toBe('Firebase Cloud Message API');
+		});
 
-      expect(result.isValid).toBe(true);
-      expect(result.errorMessage).toBeUndefined();
-    });
+		it('should have required properties defined', () => {
+			expect(firebaseCredential.properties).toBeDefined();
+			expect(Array.isArray(firebaseCredential.properties)).toBe(true);
+			expect(firebaseCredential.properties.length).toBeGreaterThan(0);
+		});
 
-    it('should reject non-string service account key', async () => {
-      const result = await firebaseCredential.validateCredentials({
-        serviceAccountKey: 123 as any,
-      });
+		it('should have serviceAccountKey as required field', () => {
+			const serviceAccountKeyField = firebaseCredential.properties.find(
+				prop => prop.name === 'serviceAccountKey',
+			);
+			expect(serviceAccountKeyField).toBeDefined();
+			expect(serviceAccountKeyField?.required).toBe(true);
+		});
+	});
 
-      expect(result.isValid).toBe(false);
-      expect(result.errorMessage).toBe('Service Account Key is not a string');
-    });
+	describe('validateCredentials', () => {
+		it('should return valid for correct service account JSON', async () => {
+			const validServiceAccount = JSON.stringify({
+				type: 'service_account',
+				project_id: 'test-project',
+				private_key_id: 'key-id',
+				private_key: '-----BEGIN PRIVATE KEY-----\ntest-private-key\n-----END PRIVATE KEY-----\n',
+				client_email: 'test@test-project.iam.gserviceaccount.com',
+				client_id: 'client-id',
+			});
 
-    it('should reject invalid JSON format', async () => {
-      const result = await firebaseCredential.validateCredentials({
-        serviceAccountKey: 'not-valid-json',
-      });
+			const credentials = {
+				serviceAccountKey: validServiceAccount,
+			};
 
-      expect(result.isValid).toBe(false);
-      expect(result.errorMessage).toBeDefined();
-    });
+			const result = await firebaseCredential.validateCredentials(credentials);
+			expect(result.isValid).toBe(true);
+		});
 
-    it('should reject service account with missing fields', async () => {
-      const result = await firebaseCredential.validateCredentials({
-        serviceAccountKey: missingFieldsServiceAccountJson,
-      });
+		it('should return invalid for missing serviceAccountKey', async () => {
+			const credentials = {};
 
-      expect(result.isValid).toBe(false);
-      expect(result.errorMessage).toContain('missing required fields');
-    });
+			const result = await firebaseCredential.validateCredentials(credentials);
+			expect(result.isValid).toBe(false);
+			expect(result.errorMessage).toBe('Service Account JSON é obrigatório');
+		});
 
-    it('should reject service account with invalid type', async () => {
-      const result = await firebaseCredential.validateCredentials({
-        serviceAccountKey: invalidTypeServiceAccountJson,
-      });
+		it('should return invalid for malformed JSON', async () => {
+			const credentials = {
+				serviceAccountKey: 'invalid-json',
+			};
 
-      expect(result.isValid).toBe(false);
-      expect(result.errorMessage).toBe('Invalid credential type. Must be a service_account.');
-    });
+			const result = await firebaseCredential.validateCredentials(credentials);
+			expect(result.isValid).toBe(false);
+			expect(result.errorMessage).toContain('JSON inválido');
+		});
 
-    it('should reject service account with invalid private key format', async () => {
-      const result = await firebaseCredential.validateCredentials({
-        serviceAccountKey: invalidPrivateKeyServiceAccountJson,
-      });
+		it('should return invalid for missing required fields', async () => {
+			const invalidServiceAccount = JSON.stringify({
+				type: 'service_account',
+				project_id: 'test-project',
+				// Missing other required fields
+			});
 
-      expect(result.isValid).toBe(false);
-      expect(result.errorMessage).toBe('Invalid private key format.');
-    });
+			const credentials = {
+				serviceAccountKey: invalidServiceAccount,
+			};
 
-    it('should reject service account with invalid email format', async () => {
-      const result = await firebaseCredential.validateCredentials({
-        serviceAccountKey: invalidEmailServiceAccountJson,
-      });
+			const result = await firebaseCredential.validateCredentials(credentials);
+			expect(result.isValid).toBe(false);
+			expect(result.errorMessage).toContain('Campos obrigatórios ausentes');
+		});
 
-      expect(result.isValid).toBe(false);
-      expect(result.errorMessage).toBe('Invalid client email format. Should end with .gserviceaccount.com');
-    });
-  });
+		it('should return invalid for wrong credential type', async () => {
+			const invalidServiceAccount = JSON.stringify({
+				type: 'user_account', // Wrong type
+				project_id: 'test-project',
+				private_key_id: 'key-id',
+				private_key: '-----BEGIN PRIVATE KEY-----\ntest-private-key\n-----END PRIVATE KEY-----\n',
+				client_email: 'test@test-project.iam.gserviceaccount.com',
+				client_id: 'client-id',
+			});
 
-  describe('TokenManager', () => {
-    it('should return the same instance when getInstance is called multiple times', () => {
-      const tokenManager1 = firebaseCredential.getTokenManager();
-      const tokenManager2 = firebaseCredential.getTokenManager();
-      
-      expect(tokenManager1).toBe(tokenManager2);
-    });
+			const credentials = {
+				serviceAccountKey: invalidServiceAccount,
+			};
 
-    it('should cache tokens and return cached token if not expired', async () => {
-      const tokenManager = firebaseCredential.getTokenManager();
-      const projectId = 'test-project';
-      const generateTokenFn = jest.fn().mockResolvedValue('test-token');
-      
-      // First call should generate a new token
-      const token1 = await tokenManager.getToken(projectId, generateTokenFn);
-      expect(generateTokenFn).toHaveBeenCalledTimes(1);
-      expect(token1).toBe('test-token');
-      
-      // Second call should use cached token
-      const token2 = await tokenManager.getToken(projectId, generateTokenFn);
-      expect(generateTokenFn).toHaveBeenCalledTimes(1); // Still just one call
-      expect(token2).toBe('test-token');
-    });
+			const result = await firebaseCredential.validateCredentials(credentials);
+			expect(result.isValid).toBe(false);
+			expect(result.errorMessage).toBe('Tipo de credencial inválido. Deve ser "service_account"');
+		});
 
-    it('should have retry mechanism for token generation', () => {
-      const tokenManager = firebaseCredential.getTokenManager();
-      
-      // Verificar se o TokenManager tem as propriedades e métodos esperados
-      expect(tokenManager).toBeDefined();
-      expect((tokenManager as any).MAX_RETRY_ATTEMPTS).toBeDefined();
-      expect((tokenManager as any).REFRESH_BUFFER_MS).toBeDefined();
-      expect((tokenManager as any).TOKEN_EXPIRY_MS).toBeDefined();
-      expect((tokenManager as any).tokenCache).toBeDefined();
-      expect((tokenManager as any).refreshTimers).toBeDefined();
-      expect((tokenManager as any).retryAttempts).toBeDefined();
-    });
-    
-    it('should support multiple projects', async () => {
-      const tokenManager = firebaseCredential.getTokenManager();
-      const projectIds = ['project-1', 'project-2'];
-      
-      const generateTokenFn = jest.fn((projectId) => {
-        return Promise.resolve(`token-for-${projectId}`);
-      });
-      
-      await tokenManager.initializeProjects(projectIds, generateTokenFn);
-      
-      expect(generateTokenFn).toHaveBeenCalledTimes(2);
-      
-      // Verify tokens are cached per project
-      const token1 = await tokenManager.getToken('project-1', () => Promise.resolve('should-not-be-called'));
-      const token2 = await tokenManager.getToken('project-2', () => Promise.resolve('should-not-be-called'));
-      
-      expect(token1).toBe('token-for-project-1');
-      expect(token2).toBe('token-for-project-2');
-    });
-    
-    it('should clean up expired tokens', async () => {
-      const tokenManager = firebaseCredential.getTokenManager();
-      
-      // Mock the token cache with an expired token
-      const expiredToken = {
-        token: 'expired-token',
-        expiry: Date.now() - 1000 // Expired 1 second ago
-      };
-      
-      // Use private property access for testing
-      const tokenCache = (tokenManager as any).tokenCache;
-      tokenCache.set('expired-project', expiredToken);
-      
-      // Clean up expired tokens
-      tokenManager.cleanupExpiredTokens();
-      
-      // Verify expired token was removed
-      expect(tokenCache.has('expired-project')).toBe(false);
-    });
-  });
-  
-  describe('Credential Properties', () => {
-    it('should have the correct credential name and display name', () => {
-      expect(firebaseCredential.name).toBe('firebaseCloudMessageApi');
-      expect(firebaseCredential.displayName).toBe('Firebase Cloud Message API');
-    });
-    
-    it('should have the correct documentation URL', () => {
-      expect(firebaseCredential.documentationUrl).toBe('https://firebase.google.com/docs/cloud-messaging');
-    });
-    
-    it('should have the required credential properties', () => {
-      const properties = firebaseCredential.properties;
-      
-      // Check for required properties
-      const serviceAccountKeyProp = properties.find(p => p.name === 'serviceAccountKey');
-      expect(serviceAccountKeyProp).toBeDefined();
-      expect(serviceAccountKeyProp?.required).toBe(true);
-      
-      // Check for optional properties
-      const databaseURLProp = properties.find(p => p.name === 'databaseURL');
-      expect(databaseURLProp).toBeDefined();
-      expect(databaseURLProp?.required).toBe(false);
-      
-      const storageBucketProp = properties.find(p => p.name === 'storageBucket');
-      expect(storageBucketProp).toBeDefined();
-      expect(storageBucketProp?.required).toBe(false);
-      
-      const regionProp = properties.find(p => p.name === 'region');
-      expect(regionProp).toBeDefined();
-      expect(regionProp?.required).toBe(false);
-      
-      // Check for token caching properties
-      const enableTokenCachingProp = properties.find(p => p.name === 'enableTokenCaching');
-      expect(enableTokenCachingProp).toBeDefined();
-      expect(enableTokenCachingProp?.default).toBe(true);
-      
-      const tokenRefreshBufferProp = properties.find(p => p.name === 'tokenRefreshBuffer');
-      expect(tokenRefreshBufferProp).toBeDefined();
-      expect(tokenRefreshBufferProp?.default).toBe(5);
-    });
-  });
+		it('should return invalid for invalid private key format', async () => {
+			const invalidServiceAccount = JSON.stringify({
+				type: 'service_account',
+				project_id: 'test-project',
+				private_key_id: 'key-id',
+				private_key: 'invalid-private-key', // Invalid format
+				client_email: 'test@test-project.iam.gserviceaccount.com',
+				client_id: 'client-id',
+			});
+
+			const credentials = {
+				serviceAccountKey: invalidServiceAccount,
+			};
+
+			const result = await firebaseCredential.validateCredentials(credentials);
+			expect(result.isValid).toBe(false);
+			expect(result.errorMessage).toBe('Formato de chave privada inválido');
+		});
+
+		it('should return invalid for invalid client email', async () => {
+			const invalidServiceAccount = JSON.stringify({
+				type: 'service_account',
+				project_id: 'test-project',
+				private_key_id: 'key-id',
+				private_key: '-----BEGIN PRIVATE KEY-----\ntest-private-key\n-----END PRIVATE KEY-----\n',
+				client_email: 'invalid-email@example.com', // Wrong format
+				client_id: 'client-id',
+			});
+
+			const credentials = {
+				serviceAccountKey: invalidServiceAccount,
+			};
+
+			const result = await firebaseCredential.validateCredentials(credentials);
+			expect(result.isValid).toBe(false);
+			expect(result.errorMessage).toBe('Email do cliente inválido. Deve terminar com .iam.gserviceaccount.com');
+		});
+	});
 }); 

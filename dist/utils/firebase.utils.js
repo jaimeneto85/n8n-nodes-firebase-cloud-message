@@ -59,14 +59,7 @@ async function initializeFirebase(credentials) {
             const initOptions = {
                 credential: admin.credential.cert(serviceAccountKey),
             };
-            // Add optional configurations if provided
-            if (credentials.databaseURL) {
-                initOptions.databaseURL = credentials.databaseURL;
-            }
-            if (credentials.storageBucket) {
-                initOptions.storageBucket = credentials.storageBucket;
-            }
-            // Initialize Firebase with all configured options
+            // Initialize Firebase with configured options
             return admin.initializeApp(initOptions, appName);
         }
     }
@@ -82,7 +75,7 @@ async function initializeFirebase(credentials) {
 async function validateAndInitializeFirebase(credentials) {
     // Validate service account key
     if (!credentials.serviceAccountKey) {
-        throw new Error('Service Account Key is required');
+        throw new Error('Service Account JSON é obrigatório');
     }
     try {
         // Parse service account key to validate JSON format
@@ -91,18 +84,18 @@ async function validateAndInitializeFirebase(credentials) {
         const requiredFields = ['type', 'project_id', 'private_key_id', 'private_key', 'client_email', 'client_id'];
         const missingFields = requiredFields.filter(field => !serviceAccountKey[field]);
         if (missingFields.length > 0) {
-            throw new Error(`Service Account JSON is missing required fields: ${missingFields.join(', ')}`);
+            throw new Error(`Service Account JSON inválido. Campos obrigatórios ausentes: ${missingFields.join(', ')}`);
         }
         // Validate that it's a service account
         if (serviceAccountKey.type !== 'service_account') {
-            throw new Error('Invalid credential type. Must be a service_account.');
+            throw new Error('Tipo de credencial inválido. Deve ser "service_account"');
         }
         // Initialize Firebase
         return await initializeFirebase(credentials);
     }
     catch (error) {
-        if (error.message.includes('Failed to parse')) {
-            throw new Error('Invalid Service Account JSON format');
+        if (error.message.includes('Failed to parse') || error.message.includes('Unexpected token')) {
+            throw new Error('Formato JSON inválido. Verifique se o JSON está correto');
         }
         throw error;
     }

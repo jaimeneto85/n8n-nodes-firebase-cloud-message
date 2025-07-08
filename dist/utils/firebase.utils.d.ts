@@ -1,15 +1,6 @@
 import * as admin from 'firebase-admin';
 import { ICredentialDataDecryptedObject } from 'n8n-workflow';
 /**
- * Interface for Firebase initialization options
- */
-export interface IFirebaseInitOptions {
-    serviceAccountKey: string;
-    databaseURL?: string;
-    storageBucket?: string;
-    appName?: string;
-}
-/**
  * Initializes Firebase Admin SDK with the provided credentials
  * @param credentials The Firebase credentials
  * @returns The initialized Firebase app instance
