@@ -321,11 +321,18 @@ class FirebaseCloudMessage {
         try {
             // Initialize Firebase Admin SDK using our utility function
             firebaseApp = await (0, firebase_utils_1.validateAndInitializeFirebase)(credentials);
-            // Get project ID from service account key
-            const serviceAccountKey = JSON.parse(credentials.serviceAccountKey);
-            projectId = serviceAccountKey.project_id;
+            // Get project ID based on authentication type
+            const authType = credentials.authType || 'oauth2';
+            if (authType === 'oauth2') {
+                projectId = credentials.projectId;
+            }
+            else {
+                // Service Account (legacy)
+                const serviceAccountKey = JSON.parse(credentials.serviceAccountKey);
+                projectId = serviceAccountKey.project_id;
+            }
             // Log successful initialization
-            this.logger.info(`Firebase Cloud Messaging initialized successfully for project: ${projectId}`);
+            this.logger.info(`Firebase Cloud Messaging initialized successfully for project: ${projectId} (auth: ${authType})`);
         }
         catch (error) {
             throw new n8n_workflow_1.NodeOperationError(this.getNode(), `Firebase initialization failed: ${error.message}`, { itemIndex: 0 });

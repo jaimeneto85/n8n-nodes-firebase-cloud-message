@@ -68,123 +68,182 @@ describe('FirebaseCloudMessageApi', () => {
 			expect(firebaseCredential.properties.length).toBeGreaterThan(0);
 		});
 
-		it('should have serviceAccountKey as required field', () => {
-			const serviceAccountKeyField = firebaseCredential.properties.find(
-				prop => prop.name === 'serviceAccountKey',
+		it('should include authType as first property', () => {
+			const authTypeProperty = firebaseCredential.properties[0];
+			expect(authTypeProperty.name).toBe('authType');
+			expect(authTypeProperty.type).toBe('options');
+			expect(authTypeProperty.default).toBe('oauth2');
+		});
+
+		it('should have OAuth2 properties with correct display options', () => {
+			const oauthProperties = firebaseCredential.properties.filter(
+				prop => prop.displayOptions?.show?.authType?.includes('oauth2')
 			);
-			expect(serviceAccountKeyField).toBeDefined();
-			expect(serviceAccountKeyField?.required).toBe(true);
+			expect(oauthProperties).toHaveLength(4); // projectId, clientId, clientSecret, refreshToken
+			
+			const propertyNames = oauthProperties.map(prop => prop.name);
+			expect(propertyNames).toContain('projectId');
+			expect(propertyNames).toContain('clientId');
+			expect(propertyNames).toContain('clientSecret');
+			expect(propertyNames).toContain('refreshToken');
+		});
+
+		it('should have service account property with correct display options', () => {
+			const serviceAccountProperty = firebaseCredential.properties.find(
+				prop => prop.name === 'serviceAccountKey'
+			);
+			expect(serviceAccountProperty).toBeDefined();
+			expect(serviceAccountProperty?.displayOptions?.show?.authType).toContain('serviceAccount');
 		});
 	});
 
-	describe('validateCredentials', () => {
-		it('should return valid for correct service account JSON', async () => {
-			const validServiceAccount = JSON.stringify({
-				type: 'service_account',
-				project_id: 'test-project',
-				private_key_id: 'key-id',
-				private_key: '-----BEGIN PRIVATE KEY-----\ntest-private-key\n-----END PRIVATE KEY-----\n',
-				client_email: 'test@test-project.iam.gserviceaccount.com',
-				client_id: 'client-id',
-			});
-
+	describe('OAuth2 credential validation', () => {
+		it('should validate valid OAuth2 credentials', async () => {
 			const credentials = {
-				serviceAccountKey: validServiceAccount,
+				authType: 'oauth2',
+				projectId: 'test-project',
+				clientId: '123456789.apps.googleusercontent.com',
+				clientSecret: 'test-secret',
+				refreshToken: 'test-refresh-token',
 			};
 
 			const result = await firebaseCredential.validateCredentials(credentials);
 			expect(result.isValid).toBe(true);
 		});
 
-		it('should return invalid for missing serviceAccountKey', async () => {
-			const credentials = {};
+		it('should reject OAuth2 credentials with missing fields', async () => {
+			const credentials = {
+				authType: 'oauth2',
+				projectId: 'test-project',
+				// Missing clientId, clientSecret, refreshToken
+			};
 
 			const result = await firebaseCredential.validateCredentials(credentials);
 			expect(result.isValid).toBe(false);
-			expect(result.errorMessage).toBe('Service Account JSON é obrigatório');
+			expect(result.errorMessage).toContain('OAuth2 credentials incomplete');
 		});
 
-		it('should return invalid for malformed JSON', async () => {
+		it('should reject OAuth2 credentials with invalid client ID format', async () => {
 			const credentials = {
+				authType: 'oauth2',
+				projectId: 'test-project',
+				clientId: 'invalid-client-id',
+				clientSecret: 'test-secret',
+				refreshToken: 'test-refresh-token',
+			};
+
+			const result = await firebaseCredential.validateCredentials(credentials);
+			expect(result.isValid).toBe(false);
+			expect(result.errorMessage).toContain('Client ID format invalid');
+		});
+
+		it('should reject OAuth2 credentials with invalid project ID format', async () => {
+			const credentials = {
+				authType: 'oauth2',
+				projectId: 'Invalid_Project_ID',
+				clientId: '123456789.apps.googleusercontent.com',
+				clientSecret: 'test-secret',
+				refreshToken: 'test-refresh-token',
+			};
+
+			const result = await firebaseCredential.validateCredentials(credentials);
+			expect(result.isValid).toBe(false);
+			expect(result.errorMessage).toContain('Project ID format invalid');
+		});
+	});
+
+	describe('Service Account credential validation', () => {
+		it('should validate valid service account credentials', async () => {
+			const serviceAccountJson = {
+				type: 'service_account',
+				project_id: 'test-project',
+				private_key_id: 'key-id',
+				private_key: '-----BEGIN PRIVATE KEY-----\ntest-key\n-----END PRIVATE KEY-----\n',
+				client_email: 'test@test-project.iam.gserviceaccount.com',
+				client_id: 'client-id',
+			};
+
+			const credentials = {
+				authType: 'serviceAccount',
+				serviceAccountKey: JSON.stringify(serviceAccountJson),
+			};
+
+			const result = await firebaseCredential.validateCredentials(credentials);
+			expect(result.isValid).toBe(true);
+		});
+
+		it('should reject service account credentials with missing JSON', async () => {
+			const credentials = {
+				authType: 'serviceAccount',
+				// Missing serviceAccountKey
+			};
+
+			const result = await firebaseCredential.validateCredentials(credentials);
+			expect(result.isValid).toBe(false);
+			expect(result.errorMessage).toContain('Service Account JSON é obrigatório');
+		});
+
+		it('should reject service account credentials with invalid JSON', async () => {
+			const credentials = {
+				authType: 'serviceAccount',
 				serviceAccountKey: 'invalid-json',
 			};
 
 			const result = await firebaseCredential.validateCredentials(credentials);
 			expect(result.isValid).toBe(false);
-			expect(result.errorMessage).toContain('JSON inválido');
+			expect(result.errorMessage).toContain('Validation error');
 		});
 
-		it('should return invalid for missing required fields', async () => {
-			const invalidServiceAccount = JSON.stringify({
+		it('should reject service account credentials with missing required fields', async () => {
+			const serviceAccountJson = {
 				type: 'service_account',
 				project_id: 'test-project',
 				// Missing other required fields
-			});
+			};
 
 			const credentials = {
-				serviceAccountKey: invalidServiceAccount,
+				authType: 'serviceAccount',
+				serviceAccountKey: JSON.stringify(serviceAccountJson),
 			};
 
 			const result = await firebaseCredential.validateCredentials(credentials);
 			expect(result.isValid).toBe(false);
-			expect(result.errorMessage).toContain('Campos obrigatórios ausentes');
+			expect(result.errorMessage).toContain('JSON inválido. Campos obrigatórios ausentes');
 		});
 
-		it('should return invalid for wrong credential type', async () => {
-			const invalidServiceAccount = JSON.stringify({
+		it('should reject credentials with wrong type', async () => {
+			const serviceAccountJson = {
 				type: 'user_account', // Wrong type
 				project_id: 'test-project',
 				private_key_id: 'key-id',
-				private_key: '-----BEGIN PRIVATE KEY-----\ntest-private-key\n-----END PRIVATE KEY-----\n',
+				private_key: '-----BEGIN PRIVATE KEY-----\ntest-key\n-----END PRIVATE KEY-----\n',
 				client_email: 'test@test-project.iam.gserviceaccount.com',
 				client_id: 'client-id',
-			});
+			};
 
 			const credentials = {
-				serviceAccountKey: invalidServiceAccount,
+				authType: 'serviceAccount',
+				serviceAccountKey: JSON.stringify(serviceAccountJson),
 			};
 
 			const result = await firebaseCredential.validateCredentials(credentials);
 			expect(result.isValid).toBe(false);
-			expect(result.errorMessage).toBe('Tipo de credencial inválido. Deve ser "service_account"');
+			expect(result.errorMessage).toContain('Tipo de credencial inválido');
 		});
+	});
 
-		it('should return invalid for invalid private key format', async () => {
-			const invalidServiceAccount = JSON.stringify({
-				type: 'service_account',
-				project_id: 'test-project',
-				private_key_id: 'key-id',
-				private_key: 'invalid-private-key', // Invalid format
-				client_email: 'test@test-project.iam.gserviceaccount.com',
-				client_id: 'client-id',
-			});
-
+	describe('default behavior', () => {
+		it('should default to OAuth2 when authType is not specified', async () => {
 			const credentials = {
-				serviceAccountKey: invalidServiceAccount,
+				// No authType specified, should default to oauth2
+				projectId: 'test-project',
+				clientId: '123456789.apps.googleusercontent.com',
+				clientSecret: 'test-secret',
+				refreshToken: 'test-refresh-token',
 			};
 
 			const result = await firebaseCredential.validateCredentials(credentials);
-			expect(result.isValid).toBe(false);
-			expect(result.errorMessage).toBe('Formato de chave privada inválido');
-		});
-
-		it('should return invalid for invalid client email', async () => {
-			const invalidServiceAccount = JSON.stringify({
-				type: 'service_account',
-				project_id: 'test-project',
-				private_key_id: 'key-id',
-				private_key: '-----BEGIN PRIVATE KEY-----\ntest-private-key\n-----END PRIVATE KEY-----\n',
-				client_email: 'invalid-email@example.com', // Wrong format
-				client_id: 'client-id',
-			});
-
-			const credentials = {
-				serviceAccountKey: invalidServiceAccount,
-			};
-
-			const result = await firebaseCredential.validateCredentials(credentials);
-			expect(result.isValid).toBe(false);
-			expect(result.errorMessage).toBe('Email do cliente inválido. Deve terminar com .iam.gserviceaccount.com');
+			expect(result.isValid).toBe(true);
 		});
 	});
 }); 

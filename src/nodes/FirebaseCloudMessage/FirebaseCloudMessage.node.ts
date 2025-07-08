@@ -339,12 +339,18 @@ export class FirebaseCloudMessage implements INodeType {
 			// Initialize Firebase Admin SDK using our utility function
 			firebaseApp = await validateAndInitializeFirebase(credentials);
 			
-			// Get project ID from service account key
-			const serviceAccountKey = JSON.parse(credentials.serviceAccountKey as string);
-			projectId = serviceAccountKey.project_id;
+			// Get project ID based on authentication type
+			const authType = credentials.authType || 'oauth2';
+			if (authType === 'oauth2') {
+				projectId = credentials.projectId as string;
+			} else {
+				// Service Account (legacy)
+				const serviceAccountKey = JSON.parse(credentials.serviceAccountKey as string);
+				projectId = serviceAccountKey.project_id;
+			}
 			
 			// Log successful initialization
-			this.logger.info(`Firebase Cloud Messaging initialized successfully for project: ${projectId}`);
+			this.logger.info(`Firebase Cloud Messaging initialized successfully for project: ${projectId} (auth: ${authType})`);
 			
 		} catch (error: any) {
 			throw new NodeOperationError(

@@ -42,16 +42,13 @@ describe('FirebaseCloudMessage Node', () => {
 		jest.clearAllMocks();
 		firebaseCloudMessage = new FirebaseCloudMessage();
 		
-		// Mock getCredentials
+		// Mock getCredentials (default to OAuth2)
 		mockGetCredentials.mockResolvedValue({
-			serviceAccountKey: JSON.stringify({
-				type: 'service_account',
-				project_id: 'test-project',
-				private_key_id: 'key-id',
-				private_key: '-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC7VJTUt9Us8cKj\nMzEfYyjiWA4R4/M2bS1GB4t7NXp98C3SC6dVMvDuictGeurT8jNbvJZHtCSuYEvu\nNMoSfm76oqFvAp8Gy0iz5sxjZmSnXyCdPEovGhLa0VzMaQ8s+CLOyS56YyCFGeJZ\n-----END PRIVATE KEY-----\n',
-				client_email: 'test@test-project.gserviceaccount.com',
-				client_id: 'client-id',
-			}),
+			authType: 'oauth2',
+			projectId: 'test-project',
+			clientId: 'test-client-id.apps.googleusercontent.com',
+			clientSecret: 'test-client-secret',
+			refreshToken: 'test-refresh-token',
 		});
 		
 		// Mock getInputData
@@ -104,14 +101,56 @@ describe('FirebaseCloudMessage Node', () => {
 	});
 	
 	describe('execute', () => {
-		it('should initialize Firebase correctly', async () => {
+		it('should initialize Firebase correctly with OAuth2', async () => {
 			// Act
 			await firebaseCloudMessage.execute.call(mockExecuteFunctions);
 			
 			// Assert
 			expect(mockGetCredentials).toHaveBeenCalledWith('firebaseCloudMessageApi');
 			expect(firebaseUtils.validateAndInitializeFirebase).toHaveBeenCalled();
-			expect(mockLogger.info).toHaveBeenCalledWith('Firebase Cloud Messaging initialized successfully for project: test-project');
+			expect(mockLogger.info).toHaveBeenCalledWith('Firebase Cloud Messaging initialized successfully for project: test-project (auth: oauth2)');
+		});
+
+		it('should initialize Firebase correctly with Service Account', async () => {
+			// Arrange - Override credentials for this test
+			mockGetCredentials.mockResolvedValueOnce({
+				authType: 'serviceAccount',
+				serviceAccountKey: JSON.stringify({
+					type: 'service_account',
+					project_id: 'test-project-sa',
+					private_key_id: 'key-id',
+					private_key: '-----BEGIN PRIVATE KEY-----\ntest-key\n-----END PRIVATE KEY-----\n',
+					client_email: 'test@test-project-sa.iam.gserviceaccount.com',
+					client_id: 'client-id',
+				}),
+			});
+			
+			// Act
+			await firebaseCloudMessage.execute.call(mockExecuteFunctions);
+			
+			// Assert
+			expect(mockGetCredentials).toHaveBeenCalledWith('firebaseCloudMessageApi');
+			expect(firebaseUtils.validateAndInitializeFirebase).toHaveBeenCalled();
+			expect(mockLogger.info).toHaveBeenCalledWith('Firebase Cloud Messaging initialized successfully for project: test-project-sa (auth: serviceAccount)');
+		});
+
+		it('should default to OAuth2 when authType is not specified', async () => {
+			// Arrange - Override credentials without authType
+			mockGetCredentials.mockResolvedValueOnce({
+				// No authType specified
+				projectId: 'test-project-default',
+				clientId: 'test-client-id.apps.googleusercontent.com',
+				clientSecret: 'test-client-secret',
+				refreshToken: 'test-refresh-token',
+			});
+			
+			// Act
+			await firebaseCloudMessage.execute.call(mockExecuteFunctions);
+			
+			// Assert
+			expect(mockGetCredentials).toHaveBeenCalledWith('firebaseCloudMessageApi');
+			expect(firebaseUtils.validateAndInitializeFirebase).toHaveBeenCalled();
+			expect(mockLogger.info).toHaveBeenCalledWith('Firebase Cloud Messaging initialized successfully for project: test-project-default (auth: oauth2)');
 		});
 		
 		it('should handle Firebase initialization errors', async () => {

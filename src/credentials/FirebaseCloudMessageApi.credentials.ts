@@ -12,6 +12,81 @@ export class FirebaseCloudMessageApi implements ICredentialType {
 	documentationUrl = 'https://firebase.google.com/docs/cloud-messaging';
 	properties: INodeProperties[] = [
 		{
+			displayName: 'Authentication Method',
+			name: 'authType',
+			type: 'options',
+			options: [
+				{
+					name: 'OAuth2',
+					value: 'oauth2',
+					description: 'Use OAuth2 authentication with Google Cloud',
+				},
+				{
+					name: 'Service Account (Legacy)',
+					value: 'serviceAccount',
+					description: 'Use service account JSON key (legacy method)',
+				},
+			],
+			default: 'oauth2',
+			description: 'Choose the authentication method',
+		},
+		{
+			displayName: 'Project ID',
+			name: 'projectId',
+			type: 'string',
+			default: '',
+			required: true,
+			description: 'Your Firebase project ID (found in Firebase Console > Project Settings)',
+			placeholder: 'my-firebase-project',
+			displayOptions: {
+				show: {
+					authType: ['oauth2'],
+				},
+			},
+		},
+		{
+			displayName: 'Client ID',
+			name: 'clientId',
+			type: 'string',
+			default: '',
+			required: true,
+			description: 'OAuth2 Client ID from Google Cloud Console > APIs & Services > Credentials',
+			placeholder: '123456789012-abcdefghijklmnopqrstuvwxyz.apps.googleusercontent.com',
+			displayOptions: {
+				show: {
+					authType: ['oauth2'],
+				},
+			},
+		},
+		{
+			displayName: 'Client Secret',
+			name: 'clientSecret',
+			type: 'string',
+			typeOptions: { password: true },
+			default: '',
+			required: true,
+			description: 'OAuth2 Client Secret from Google Cloud Console',
+			displayOptions: {
+				show: {
+					authType: ['oauth2'],
+				},
+			},
+		},
+		{
+			displayName: 'Refresh Token',
+			name: 'refreshToken',
+			type: 'string',
+			typeOptions: { password: true },
+			default: '',
+			required: true,
+			description: 'OAuth2 Refresh Token (obtained through the authorization flow)',
+			displayOptions: {
+				show: {
+					authType: ['oauth2'],
+				},
+			},
+		},
+		{
 			displayName: 'Service Account JSON',
 			name: 'serviceAccountKey',
 			type: 'string',
@@ -23,6 +98,11 @@ export class FirebaseCloudMessageApi implements ICredentialType {
 			description: 'Cole aqui o JSON completo baixado do Firebase Console > Project Settings > Service Accounts > Generate new private key',
 			required: true,
 			placeholder: '{\n  "type": "service_account",\n  "project_id": "your-project-id",\n  "private_key_id": "...",\n  "private_key": "-----BEGIN PRIVATE KEY-----\\n...\\n-----END PRIVATE KEY-----\\n",\n  "client_email": "...@your-project-id.iam.gserviceaccount.com",\n  ...\n}',
+			displayOptions: {
+				show: {
+					authType: ['serviceAccount'],
+				},
+			},
 		},
 	];
 
@@ -34,7 +114,7 @@ export class FirebaseCloudMessageApi implements ICredentialType {
 	test: ICredentialTestRequest = {
 		request: {
 			baseURL: 'https://fcm.googleapis.com/v1/projects',
-			url: '={{JSON.parse($credentials.serviceAccountKey).project_id}}',
+			url: '={{$credentials.authType === "oauth2" ? $credentials.projectId : JSON.parse($credentials.serviceAccountKey).project_id}}',
 			method: 'GET',
 		},
 	};
@@ -46,60 +126,78 @@ export class FirebaseCloudMessageApi implements ICredentialType {
 		errorMessage?: string;
 	}> {
 		try {
-			if (!credentials.serviceAccountKey || typeof credentials.serviceAccountKey !== 'string') {
-				return {
-					isValid: false,
-					errorMessage: 'Service Account JSON é obrigatório',
-				};
-			}
+			const authType = credentials.authType || 'oauth2';
 
-			const serviceAccount = JSON.parse(credentials.serviceAccountKey);
-			
-			// Validar campos obrigatórios
-			const requiredFields = [
-				'type',
-				'project_id',
-				'private_key_id',
-				'private_key',
-				'client_email',
-				'client_id',
-			];
-			
-			const missingFields = requiredFields.filter(field => !serviceAccount[field]);
-			
-			if (missingFields.length > 0) {
-				return {
-					isValid: false,
-					errorMessage: `JSON inválido. Campos obrigatórios ausentes: ${missingFields.join(', ')}`,
-				};
-			}
-			
-			if (serviceAccount.type !== 'service_account') {
-				return {
-					isValid: false,
-					errorMessage: 'Tipo de credencial inválido. Deve ser "service_account"',
-				};
-			}
-			
-			if (!serviceAccount.private_key.includes('-----BEGIN PRIVATE KEY-----')) {
-				return {
-					isValid: false,
-					errorMessage: 'Formato de chave privada inválido',
-				};
-			}
-			
-			if (!serviceAccount.client_email.includes('@') || !serviceAccount.client_email.endsWith('.iam.gserviceaccount.com')) {
-				return {
-					isValid: false,
-					errorMessage: 'Email do cliente inválido. Deve terminar com .iam.gserviceaccount.com',
-				};
+			if (authType === 'oauth2') {
+				// Validate OAuth2 credentials
+				const requiredFields = ['projectId', 'clientId', 'clientSecret', 'refreshToken'];
+				const missingFields = requiredFields.filter(field => !credentials[field]);
+				
+				if (missingFields.length > 0) {
+					return {
+						isValid: false,
+						errorMessage: `OAuth2 credentials incomplete. Missing fields: ${missingFields.join(', ')}`,
+					};
+				}
+
+				// Basic format validation
+				const clientId = credentials.clientId as string;
+				if (!clientId.includes('.apps.googleusercontent.com')) {
+					return {
+						isValid: false,
+						errorMessage: 'Client ID format invalid. Should end with .apps.googleusercontent.com',
+					};
+				}
+
+				const projectId = credentials.projectId as string;
+				if (!/^[a-z0-9-]+$/.test(projectId)) {
+					return {
+						isValid: false,
+						errorMessage: 'Project ID format invalid. Should contain only lowercase letters, numbers, and hyphens',
+					};
+				}
+			} else {
+				// Validate Service Account credentials (legacy)
+				if (!credentials.serviceAccountKey || typeof credentials.serviceAccountKey !== 'string') {
+					return {
+						isValid: false,
+						errorMessage: 'Service Account JSON é obrigatório',
+					};
+				}
+
+				const serviceAccount = JSON.parse(credentials.serviceAccountKey);
+				
+				const requiredFields = [
+					'type',
+					'project_id',
+					'private_key_id',
+					'private_key',
+					'client_email',
+					'client_id',
+				];
+				
+				const missingFields = requiredFields.filter(field => !serviceAccount[field]);
+				
+				if (missingFields.length > 0) {
+					return {
+						isValid: false,
+						errorMessage: `JSON inválido. Campos obrigatórios ausentes: ${missingFields.join(', ')}`,
+					};
+				}
+				
+				if (serviceAccount.type !== 'service_account') {
+					return {
+						isValid: false,
+						errorMessage: 'Tipo de credencial inválido. Deve ser "service_account"',
+					};
+				}
 			}
 			
 			return { isValid: true };
 		} catch (error: unknown) {
 			return {
 				isValid: false,
-				errorMessage: error instanceof Error ? `JSON inválido: ${error.message}` : 'Formato JSON inválido',
+				errorMessage: error instanceof Error ? `Validation error: ${error.message}` : 'Invalid credentials format',
 			};
 		}
 	}
