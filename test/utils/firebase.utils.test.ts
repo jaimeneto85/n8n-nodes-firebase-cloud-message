@@ -31,6 +31,15 @@ jest.mock('firebase-admin', () => {
 // Mock global fetch for OAuth2 token requests
 global.fetch = jest.fn();
 
+// Mock Google Auth Library
+jest.mock('google-auth-library', () => ({
+	GoogleAuth: jest.fn(() => ({
+		getClient: jest.fn(() => ({
+			getAccessToken: jest.fn(() => ({ token: 'mock-access-token' })),
+		})),
+	})),
+}));
+
 describe('Firebase Utilities', () => {
 	// Reset mocks before each test
 	beforeEach(() => {

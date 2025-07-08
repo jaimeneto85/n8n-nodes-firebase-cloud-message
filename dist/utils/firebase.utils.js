@@ -38,6 +38,7 @@ exports.validateAndInitializeFirebase = validateAndInitializeFirebase;
 exports.getMessaging = getMessaging;
 exports.clearTokenCache = clearTokenCache;
 const admin = __importStar(require("firebase-admin"));
+const google_auth_library_1 = require("google-auth-library");
 /**
  * OAuth2 token cache to avoid unnecessary requests
  */
@@ -89,19 +90,6 @@ async function getOAuth2AccessToken(credentials) {
     return tokenData.access_token;
 }
 /**
- * Creates a custom credential for OAuth2 authentication
- * @param credentials The OAuth2 credentials
- * @returns A custom credential object
- */
-async function createOAuth2Credential(credentials) {
-    return {
-        getAccessToken: async () => {
-            const token = await getOAuth2AccessToken(credentials);
-            return { access_token: token };
-        },
-    };
-}
-/**
  * Initializes Firebase Admin SDK with the provided credentials
  * @param credentials The Firebase credentials (OAuth2 or Service Account)
  * @returns The initialized Firebase app instance
@@ -130,10 +118,34 @@ async function initializeFirebase(credentials) {
             // App doesn't exist, create new one
             let initOptions;
             if (authType === 'oauth2') {
-                // OAuth2 authentication
-                const oauth2Credential = await createOAuth2Credential(credentials);
+                // OAuth2 authentication using Google Auth Library
+                const googleAuth = new google_auth_library_1.GoogleAuth({
+                    credentials: {
+                        client_id: credentials.clientId,
+                        client_secret: credentials.clientSecret,
+                        refresh_token: credentials.refreshToken,
+                        type: 'authorized_user',
+                    },
+                    scopes: [
+                        'https://www.googleapis.com/auth/cloud-platform',
+                        'https://www.googleapis.com/auth/firebase.messaging',
+                    ],
+                });
+                // Get auth client
+                const authClient = await googleAuth.getClient();
+                // Create a custom credential that uses the Google Auth client
+                const customCredential = {
+                    getAccessToken: async () => {
+                        const tokenResponse = await authClient.getAccessToken();
+                        return {
+                            access_token: tokenResponse.token || '',
+                            expires_in: 3600,
+                        };
+                    },
+                    projectId,
+                };
                 initOptions = {
-                    credential: admin.credential.refreshToken(oauth2Credential),
+                    credential: customCredential,
                     projectId,
                 };
             }

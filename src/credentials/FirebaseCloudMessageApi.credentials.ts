@@ -19,12 +19,12 @@ export class FirebaseCloudMessageApi implements ICredentialType {
 				{
 					name: 'OAuth2',
 					value: 'oauth2',
-					description: 'Use OAuth2 authentication with Google Cloud',
+					description: 'Use OAuth2 authentication with Google Cloud (recommended)',
 				},
 				{
 					name: 'Service Account (Legacy)',
 					value: 'serviceAccount',
-					description: 'Use service account JSON key (legacy method)',
+					description: 'Use service account JSON key (legacy method - deprecated)',
 				},
 			],
 			default: 'oauth2',
@@ -50,7 +50,7 @@ export class FirebaseCloudMessageApi implements ICredentialType {
 			type: 'string',
 			default: '',
 			required: true,
-			description: 'OAuth2 Client ID from Google Cloud Console > APIs & Services > Credentials',
+			description: 'OAuth2 Client ID from Google Cloud Console > APIs & Services > Credentials. Create a new OAuth 2.0 Client ID if needed.',
 			placeholder: '123456789012-abcdefghijklmnopqrstuvwxyz.apps.googleusercontent.com',
 			displayOptions: {
 				show: {
@@ -65,7 +65,7 @@ export class FirebaseCloudMessageApi implements ICredentialType {
 			typeOptions: { password: true },
 			default: '',
 			required: true,
-			description: 'OAuth2 Client Secret from Google Cloud Console',
+			description: 'OAuth2 Client Secret from Google Cloud Console > APIs & Services > Credentials',
 			displayOptions: {
 				show: {
 					authType: ['oauth2'],
@@ -79,7 +79,7 @@ export class FirebaseCloudMessageApi implements ICredentialType {
 			typeOptions: { password: true },
 			default: '',
 			required: true,
-			description: 'OAuth2 Refresh Token (obtained through the authorization flow)',
+			description: 'OAuth2 Refresh Token. Use Google OAuth2 Playground (https://developers.google.com/oauthplayground) to generate this token with Firebase Cloud Messaging API scope.',
 			displayOptions: {
 				show: {
 					authType: ['oauth2'],

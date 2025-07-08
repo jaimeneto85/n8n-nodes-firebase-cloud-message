@@ -1,5 +1,6 @@
 import * as admin from 'firebase-admin';
 import { ICredentialDataDecryptedObject } from 'n8n-workflow';
+import { GoogleAuth } from 'google-auth-library';
 
 /**
  * OAuth2 token cache to avoid unnecessary requests
@@ -61,19 +62,6 @@ async function getOAuth2AccessToken(credentials: ICredentialDataDecryptedObject)
 	return tokenData.access_token;
 }
 
-/**
- * Creates a custom credential for OAuth2 authentication
- * @param credentials The OAuth2 credentials
- * @returns A custom credential object
- */
-async function createOAuth2Credential(credentials: ICredentialDataDecryptedObject) {
-	return {
-		getAccessToken: async () => {
-			const token = await getOAuth2AccessToken(credentials);
-			return { access_token: token };
-		},
-	};
-}
 
 /**
  * Initializes Firebase Admin SDK with the provided credentials
@@ -107,10 +95,37 @@ export async function initializeFirebase(
 			let initOptions: admin.AppOptions;
 			
 			if (authType === 'oauth2') {
-				// OAuth2 authentication
-				const oauth2Credential = await createOAuth2Credential(credentials);
+				// OAuth2 authentication using Google Auth Library
+				const googleAuth = new GoogleAuth({
+					credentials: {
+						client_id: credentials.clientId as string,
+						client_secret: credentials.clientSecret as string,
+						refresh_token: credentials.refreshToken as string,
+						type: 'authorized_user',
+					},
+					scopes: [
+						'https://www.googleapis.com/auth/cloud-platform',
+						'https://www.googleapis.com/auth/firebase.messaging',
+					],
+				});
+				
+				// Get auth client
+				const authClient = await googleAuth.getClient();
+				
+				// Create a custom credential that uses the Google Auth client
+				const customCredential = {
+					getAccessToken: async () => {
+						const tokenResponse = await authClient.getAccessToken();
+						return { 
+							access_token: tokenResponse.token || '',
+							expires_in: 3600,
+						};
+					},
+					projectId,
+				};
+				
 				initOptions = {
-					credential: admin.credential.refreshToken(oauth2Credential as any),
+					credential: customCredential as any,
 					projectId,
 				};
 			} else {
